@@ -1,0 +1,63 @@
+{
+  "expo": {
+    "name": "FitLife 360",
+    "slug": "fitlife-360",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "fitlife360",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0E0E12"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.fitlife360.app",
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "FitLife 360 needs photo access so you can add exercise demo photos.",
+        "NSCameraUsageDescription": "FitLife 360 needs camera access so you can capture exercise demo photos."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0E0E12"
+      },
+      "package": "com.fitlife360.app",
+      "versionCode": 4
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-av",
+      "expo-image-picker",
+      [
+      "expo-notifications",
+      {
+        "icon": "./assets/icon.png",
+        "color": "#22C55E"
+      }
+    ],
+    [
+      "expo-build-properties",
+      {
+        "android": {
+          "kotlinVersion": "1.9.25"
+        }
+      }
+    ]
+  ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
