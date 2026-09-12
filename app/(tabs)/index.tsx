@@ -1,13 +1,15 @@
 import { useCallback, useState, useEffect } from 'react';
 import { ScrollView, View, Text, Pressable, StyleSheet, RefreshControl, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
-import {Card, H1, Body, Muted, PrimaryButton, DisclaimerBanner, BottomSpace, ActionCard, TopSpace, PageHeader} from '../../src/components/ui';
+import {Card, H1, Body, Muted, PrimaryButton, DisclaimerBanner, BottomSpace, ActionCard, TopSpace, PageHeader, Field, SmallButton} from '../../src/components/ui';
 import { ExerciseGallery } from '../../src/components/ExercisePhoto';
 import { EXERCISES } from '../../src/data/exercises';
 import { buildTargets } from '../../src/utils/nutrition';
 import { useAppStore } from '../../src/store/useAppStore';
 import { SPOT_REDUCTION_NOTE } from '../../src/utils/progression';
 import { getDailySummary, pruneOldLogs, type DailySummary } from '../../src/lib/tracking';
+import { getCustomTargets, setCustomTargets, clearCustomTargets, type CustomTargets } from '../../src/lib/targets';
+import { toast } from '../../src/components/Toast';
 import { Colors } from '../../src/theme';
 import { AppIcon } from '../../src/components/AppIcon';
 
@@ -24,16 +26,51 @@ export default function Home() {
   const addWater = useAppStore((s) => s.addWater);
   const t = buildTargets({ weightKg: 70, heightCm: 170, activity: 'moderate', goal: 'fat_loss' });
   const [today, setToday] = useState<DailySummary | null>(null);
+  const [custom, setCustom] = useState<CustomTargets | null>(null);
+  const [editing, setEditing] = useState(false);
+  const [fCal, setFCal] = useState('');
+  const [fPro, setFPro] = useState('');
+  const [fWat, setFWat] = useState('');
 
   // Move of the day rotates daily — animated demo right on Home
   const move = EXERCISES[Math.floor(Date.now() / 86400000) % EXERCISES.length];
 
   const load = useCallback(async () => {
     try { setToday(await getDailySummary()); } catch { setToday(null); }
+    try { setCustom(await getCustomTargets()); } catch {}
     // Auto-delete logs older than 3 days (per account, silent)
     pruneOldLogs().catch(() => {});
   }, []);
   useEffect(() => { load(); }, [load]);
+
+  const showCal = custom?.calories ?? t.calories;
+  const showPro = custom?.protein_g ?? t.protein_g;
+  const showWat = custom?.water_ml ?? t.water_ml;
+
+  const openEditor = () => {
+    setFCal(String(showCal));
+    setFPro(String(showPro));
+    setFWat(String(showWat));
+    setEditing(true);
+  };
+
+  const saveTargets = async () => {
+    const cal = Number(fCal), pro = Number(fPro), wat = Number(fWat);
+    if (!(cal > 800 && cal < 8000)) return toast('Calories must be 800–8000', 'error');
+    if (!(pro >= 0 && pro < 500)) return toast('Protein must be 0–500 g', 'error');
+    if (!(wat > 0 && wat <= 10000)) return toast('Water must be 1–10000 ml', 'error');
+    await setCustomTargets({ calories: Math.round(cal), protein_g: Math.round(pro), water_ml: Math.round(wat) });
+    setCustom({ calories: Math.round(cal), protein_g: Math.round(pro), water_ml: Math.round(wat) });
+    setEditing(false);
+    toast('Targets saved ✓ — showing yours now');
+  };
+
+  const resetTargets = async () => {
+    await clearCustomTargets();
+    setCustom(null);
+    setEditing(false);
+    toast('Back to estimated targets');
+  };
 
   return (
     <ScrollView
@@ -55,13 +92,27 @@ export default function Home() {
       </Pressable>
 
       <View style={useStyles().statStrip}>
-        <View style={useStyles().miniStat}><Text style={useStyles().miniVal}>{t.calories}</Text><Text style={useStyles().miniLab}>kcal</Text></View>
-        <View style={useStyles().miniStat}><Text style={useStyles().miniVal}>{t.protein_g}g</Text><Text style={useStyles().miniLab}>protein</Text></View>
-        <View style={useStyles().miniStat}><Text style={useStyles().miniVal}>{water}</Text><Text style={useStyles().miniLab}>ml water</Text></View>
+        <View style={useStyles().miniStat}><Text style={useStyles().miniVal}>{showCal}</Text><Text style={useStyles().miniLab}>kcal target</Text></View>
+        <View style={useStyles().miniStat}><Text style={useStyles().miniVal}>{showPro}g</Text><Text style={useStyles().miniLab}>protein target</Text></View>
+        <View style={useStyles().miniStat}><Text style={useStyles().miniVal}>{water}/{showWat}</Text><Text style={useStyles().miniLab}>ml water</Text></View>
         <Pressable style={useStyles().miniAdd} onPress={() => addWater(250)}>
           <AppIcon name="add" size={18} color={Colors.text} />
         </Pressable>
       </View>
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 2 }}>
+        <Muted>{custom ? '🎯 Showing YOUR targets' : '🤖 Showing estimated targets'}</Muted>
+        <View style={{ flex: 1 }} />
+        <SmallButton title={editing ? 'Close' : '🎯 Set targets'} tone="ghost" onPress={() => (editing ? setEditing(false) : openEditor())} />
+      </View>
+      {editing ? (
+        <Card accent={Colors.primary}>
+          <Field label="Calories target (kcal)" value={fCal} onChangeText={setFCal} placeholder="e.g. 2200" keyboardType="numeric" />
+          <Field label="Protein target (g)" value={fPro} onChangeText={setFPro} placeholder="e.g. 120" keyboardType="numeric" />
+          <Field label="Water target (ml)" value={fWat} onChangeText={setFWat} placeholder="e.g. 3000" keyboardType="numeric" />
+          <PrimaryButton title="Save my targets ✓" onPress={saveTargets} />
+          {custom ? <SmallButton title="Back to estimates" tone="ghost" onPress={resetTargets} /> : null}
+        </Card>
+      ) : null}
 
       <Card>
         <Body>⚖️ {today?.weightKg != null ? `${today.weightKg} kg` : '— weight'}</Body>

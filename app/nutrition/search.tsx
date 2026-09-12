@@ -102,11 +102,7 @@ export default function Search() {
             </View>
           ) : null
         }
-        ListFooterComponent={
-          <View style={{ paddingBottom: 24 }}>
-            <ActionCard title="Add new diet item" desc="Macros + photo" icon="add-circle-outline" onPress={() => router.push('/nutrition/add-food' as any)} />
-          </View>
-        }
+        ListFooterComponent={<View style={{ height: 12 }} />}
         renderItem={({ item: f }) => {
           const mine = !!(f as any).created_by && (f as any).created_by === uid;
           return (

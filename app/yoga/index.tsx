@@ -97,7 +97,6 @@ export default function YogaIndex() {
           </View>
         </Pressable>
       ))}
-      <ActionCard title="Add new yoga flow" desc="5 animated photos" icon="add-circle-outline" onPress={() => router.push('/yoga/add' as any)} />
       {q.trim() ? (
         <ActionCard title={`Can't find it? Add "${q.trim().length > 22 ? q.trim().slice(0, 22) + '…' : q.trim()}"`} desc="Name is prefilled for you" icon="add-circle" onPress={() => router.push(`/yoga/add?name=${encodeURIComponent(q.trim())}` as any)} />
       ) : null}

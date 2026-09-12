@@ -8,8 +8,6 @@ export const FOOD_PHOTOS: Record<string, string> = {
   chapati: 'https://images.openfoodfacts.org/images/products/890/172/501/6838/front_en.7.400.jpg',
   rice: 'https://images.openfoodfacts.org/images/products/069/022/510/1103/front_en.9.400.jpg',
   dal: 'https://images.openfoodfacts.org/images/products/890/404/392/6216/front_en.5.400.jpg',
-  rajma: 'https://images.openfoodfacts.org/images/products/890/606/685/2206/front_en.3.400.jpg',
-  chole: 'https://images.openfoodfacts.org/images/products/890/600/881/5184/front_en.3.400.jpg',
   paneer: 'https://images.openfoodfacts.org/images/products/890/126/218/0115/front_en.6.400.jpg',
   curd: 'https://images.openfoodfacts.org/images/products/890/126/220/2220/front_en.7.400.jpg',
   buttermilk: 'https://images.openfoodfacts.org/images/products/890/126/220/2244/front_en.3.400.jpg',

@@ -97,7 +97,6 @@ export function ExerciseList() {
         showsVerticalScrollIndicator={false}
         ListFooterComponent={
           <View style={{ paddingBottom: 24 }}>
-            <ActionCard title="Add new exercise" desc="With 5 animated photos" icon="add-circle-outline" onPress={() => router.push('/workouts/add' as any)} />
             {hidden.size > 0 ? (
               <SmallButton title={`Show ${hidden.size} hidden`} icon="eye-outline" tone="ghost" onPress={async () => { await clearHiddenExercises(); loadCustom(); }} />
             ) : null}

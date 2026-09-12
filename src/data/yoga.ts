@@ -33,6 +33,7 @@ export const YOGA_POSES: YogaPose[] = [
   { id: 'chair-leg-stretch', name: 'Chair Leg Stretch', level: 'easy', duration_sec: 45, setup: 'Sit tall, extend one leg, flex foot, lean slightly.', breathing: 'Slow breaths.', errors: ['Slouching'], easier: 'Both feet down march', caution: 'Use a stable chair.' },
   { id: 'chair-upper-stretch', name: 'Chair Upper Body Stretch', level: 'easy', duration_sec: 45, setup: 'Sit, clasp hands overhead, lengthen and lean gently.', breathing: 'Tall inhale, soft exhale.', errors: ['Ribs flaring'], easier: 'Hands on lap, shoulder rolls', caution: 'Gentle with back pain.' },
   { id: 'elbow-circles', name: 'Elbow Circles Warm-up', level: 'easy', duration_sec: 45, setup: 'Fingertips on shoulders, draw big slow elbow circles.', breathing: 'Inhale up, exhale down.', errors: ['Tiny rushed circles'], easier: 'Shoulder shrugs', caution: 'Easy with shoulder injury.' },
+  { id: 'worlds-greatest', name: "World's Greatest Stretch", level: 'normal', duration_sec: 60, setup: 'Deep lunge, hand down inside front foot, rotate chest open.', breathing: 'Exhale into the twist.', errors: ['Collapsing the front knee'], easier: 'Back knee on the floor', caution: 'Avoid with hip impingement pain.' },
 ];
 
 export const YOGA_SESSIONS = [
@@ -45,7 +46,7 @@ export const YOGA_SESSIONS = [
   { id: 'core-fire', name: 'Core Fire Flow', level: 'normal' as const, duration_min: 20, focus: 'Core heat', poses: ['breath', 'mountain-climb', 'side-bridge-pose', 'boat', 'child'] },
   { id: 'leg-reset', name: 'Legs Reset', level: 'easy' as const, duration_min: 15, focus: 'Calves + hips', poses: ['breath', 'calf-wall-stretch', 'child', 'bridge'] },
   { id: 'desk-reset', name: 'Desk Reset', level: 'easy' as const, duration_min: 12, focus: 'Neck + back + waist', poses: ['breath', 'chin-chest-stretch', 'chair-back-stretch', 'elbow-to-knee'] },
-  { id: 'lower-stretch', name: 'Lower Body Stretch', level: 'easy' as const, duration_min: 16, focus: 'Hips + hamstrings', poses: ['breath', 'itband-stretch', 'seated-hamstring', 'calf-wall-stretch', 'child'] },
+  { id: 'lower-stretch', name: 'Lower Body Stretch', level: 'easy' as const, duration_min: 18, focus: 'Hips + hamstrings', poses: ['breath', 'itband-stretch', 'seated-hamstring', 'worlds-greatest', 'calf-wall-stretch', 'child'] },
   { id: 'full-stretch', name: 'Full Body Stretch', level: 'easy' as const, duration_min: 20, focus: 'Head to toe', poses: ['breath', 'chin-chest-stretch', 'shoulder-opener', 'hamstring-fold', 'hip-flexor-lunge', 'worlds-greatest', 'child'] },
   { id: 'back-care', name: 'Back Care Flow', level: 'normal' as const, duration_min: 18, focus: 'Spine strength + ease', poses: ['breath', 'catcow', 'superman-flow', 'pelvic-bridge', 'lying-glute', 'child'] },
 ];
