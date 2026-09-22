@@ -1,4 +1,4 @@
-# FITLIFE 360 — React Native Fitness, Nutrition, Yoga & Habit Coaching App
+# FITLIFE 360 — React Native Fitness, Nutrition, Yoga & Habit Coaching App 
 
 Expo + TypeScript + Supabase | Expo Router | Android + iOS | Educational wellness guidance (not medical advice).
 
