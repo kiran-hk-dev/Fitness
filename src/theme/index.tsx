@@ -172,7 +172,11 @@ export function cell(columns: number, gutter = GUTTER) {
 
 /** A flexWrap row that cancels the gutter back out to the content edge. */
 export function gridRow(gutter = GUTTER, extra?: Record<string, unknown>) {
-  return { flexDirection: 'row' as const, flexWrap: 'wrap' as const, marginHorizontal: -gutter, ...extra };
+  return { flexDirection: 'row' as const, flexWrap: 'wrap' as const, marginHorizontal: -gutter, ...extra } as {
+    flexDirection: 'row';
+    flexWrap: 'wrap';
+    marginHorizontal: number;
+  } & Record<string, unknown>;
 }
 
 export const Shadow = {

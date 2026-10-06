@@ -30,17 +30,6 @@ jest.mock('react-native-svg', () => {
 
 jest.mock('expo-router', () => ({ useRouter: () => ({ push: jest.fn(), back: jest.fn() }) }));
 
-jest.mock('@react-native-async-storage/async-storage', () => {
-  const m = new Map<string, string>();
-  return {
-    __esModule: true,
-    default: {
-      getItem: jest.fn(async (k: string) => (m.has(k) ? m.get(k)! : null)),
-      setItem: jest.fn(async (k: string, v: string) => { m.set(k, v); }),
-      removeItem: jest.fn(async (k: string) => { m.delete(k); }),
-    },
-  };
-});
 
 /**
  * Render, assert, then UNMOUNT. Unmount matters: several of these components

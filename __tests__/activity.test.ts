@@ -18,17 +18,7 @@ jest.mock('../src/lib/supabase', () => ({
   supabase: { auth: { getUser: jest.fn().mockResolvedValue({ data: { user: null } }) }, from: jest.fn() },
 }));
 
-const mockStore = new Map<string, string>();
-jest.mock('@react-native-async-storage/async-storage', () => ({
-  getItem: jest.fn(async (k: string) => (mockStore.has(k) ? mockStore.get(k)! : null)),
-  setItem: jest.fn(async (k: string, v: string) => { mockStore.set(k, v); }),
-  removeItem: jest.fn(async (k: string) => { mockStore.delete(k); }),
-}));
 
-beforeEach(async () => {
-  mockStore.clear();
-  await writeCache({ days: {}, unlocked: [] });
-});
 
 describe('local day keys', () => {
   it('formats as YYYY-MM-DD from local time (not UTC)', () => {

@@ -12,14 +12,7 @@ jest.mock('../src/lib/supabase', () => ({
   supabase: { auth: { getUser: jest.fn().mockResolvedValue({ data: { user: null } }) }, from: jest.fn() },
 }));
 
-const mockStore = new Map<string, string>();
-jest.mock('@react-native-async-storage/async-storage', () => ({
-  getItem: jest.fn(async (k: string) => (mockStore.has(k) ? mockStore.get(k)! : null)),
-  setItem: jest.fn(async (k: string, v: string) => { mockStore.set(k, v); }),
-  removeItem: jest.fn(async (k: string) => { mockStore.delete(k); }),
-}));
 
-beforeEach(() => mockStore.clear());
 
 const entry = (over: Partial<LoggedEntry> = {}): LoggedEntry => ({
   id: 'e1', slot: 'lunch', foodId: 'rice', name: 'Cooked Rice', qty: 1,

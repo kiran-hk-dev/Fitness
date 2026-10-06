@@ -3,9 +3,6 @@ import { retentionCutoffs, RETENTION_DAYS } from '../src/lib/tracking';
 jest.mock('../src/lib/supabase', () => ({
   supabase: { auth: { getUser: jest.fn() }, from: jest.fn() },
 }));
-jest.mock('@react-native-async-storage/async-storage', () => ({
-  getItem: jest.fn(), setItem: jest.fn(), removeItem: jest.fn(),
-}));
 
 describe('3-day retention', () => {
   it('defaults to 3 days', () => {

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, Pressable, RefreshControl } from 'react-native';
 import { useRouter } from 'expo-router';
 import {
-  PageHeader, Card, Body, Muted, PrimaryButton, GhostButton, PickButton,
+  PageHeader, Card, Body, Muted, PrimaryButton, GhostButton, PickButton, PickRow,
   BottomSpace, TopSpace, SectionTitle, DisclaimerBanner,
 } from '../../src/components/ui';
 import { RingProgress, CountUp } from '../../src/components/ActivityVisuals';
@@ -137,11 +137,11 @@ export default function WaterScreen() {
         </Card>
 
         <SectionTitle title="Daily target" icon="speedometer-outline" />
-        <View style={s.goalRow}>
+        <PickRow>
           {GOAL_CHOICES.map((g) => (
             <PickButton key={g} label={`${(g / 1000).toFixed(g % 1000 ? 1 : 0)}L`} selected={goal === g} onPress={() => setGoal(g)} />
           ))}
-        </View>
+        </PickRow>
         <GhostButton
           title="Estimate from my weight"
           icon="scale-outline"
@@ -173,7 +173,7 @@ const s = StyleSheet.create({
   bottleSlot: { alignItems: 'center', marginRight: 10, marginBottom: 10 },
   bottle: { width: 52, height: 74, borderRadius: 10, borderWidth: 2, borderColor: Colors.border, alignItems: 'center', justifyContent: 'center' },
   bottleNum: { color: Colors.muted, fontSize: 10, fontWeight: '700', marginTop: 4 },
-  goalRow: { flexDirection: 'row' },
+  
 });
 
 const b = StyleSheet.create({

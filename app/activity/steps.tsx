@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, TextInput, Pressable, RefreshControl } from 'react-native';
 import { useRouter } from 'expo-router';
 import {
-  PageHeader, Card, H2, Body, Muted, PrimaryButton, GhostButton, PickButton,
+  PageHeader, Card, H2, Body, Muted, PrimaryButton, GhostButton, PickButton, PickRow,
   BottomSpace, TopSpace, SectionTitle, ActionCard, DisclaimerBanner,
 } from '../../src/components/ui';
 import { RingProgress, CountUp, AnimatedBar } from '../../src/components/ActivityVisuals';
@@ -154,11 +154,11 @@ export default function StepsScreen() {
         </Card>
 
         <SectionTitle title="Daily goal" icon="speedometer-outline" />
-        <View style={s.goalRow}>
+        <PickRow>
           {GOAL_CHOICES.map((g) => (
             <PickButton key={g} label={g >= 1000 ? `${g / 1000}k` : String(g)} selected={goal === g} onPress={() => setGoal(g)} />
           ))}
-        </View>
+        </PickRow>
 
         <DisclaimerBanner text="Phone step counts are estimates — treat them as a guide, not a scoreboard. Break up long sitting with a short walk every 30–60 minutes." />
         <BottomSpace />
@@ -199,5 +199,5 @@ const s = StyleSheet.create({
   miniRow: { flexDirection: 'row', flexWrap: 'wrap', marginTop: 4 },
   miniBadge: { width: 72, alignItems: 'center', paddingVertical: 10, borderRadius: 14, borderWidth: 1.5, borderColor: Colors.border, marginRight: 8, marginTop: 8 },
   miniBadgeText: { color: Colors.muted, fontWeight: '800', fontSize: 12, marginTop: 4 },
-  goalRow: { flexDirection: 'row' },
+  
 });

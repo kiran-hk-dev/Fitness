@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, TextInput, Pressable, RefreshControl } from 'react-native';
 import { useRouter } from 'expo-router';
 import {
-  PageHeader, Card, Body, Muted, PrimaryButton, GhostButton, PickButton,
+  PageHeader, Card, Body, Muted, PrimaryButton, GhostButton, PickButton, PickRow,
   BottomSpace, TopSpace, SectionTitle, DisclaimerBanner, DataRow,
 } from '../../src/components/ui';
 import { CountUp, AnimatedBar } from '../../src/components/ActivityVisuals';
@@ -171,11 +171,11 @@ export default function RunScreen() {
           ) : null}
 
           <PrimaryButton title="Save this run" icon="checkmark" loading={busy} onPress={() => save(Number(dist) || 0, Number(mins) || 0)} />
-          <View style={s.shortcutRow}>
+          <PickRow style={{ marginTop: 4 }}>
             {[1, 5, 10].map((km) => (
               <PickButton key={km} label={`${km} km`} onPress={() => setDist(String(km))} />
             ))}
-          </View>
+          </PickRow>
         </Card>
 
         <SectionTitle title="This week" icon="bar-chart-outline" right={`goal ${WEEK_GOAL_KM} km`} />
@@ -213,7 +213,7 @@ export default function RunScreen() {
         </Card>
 
         <SectionTitle title="Other cardio" icon="heart-outline" />
-        <View style={s.cardioRow}>
+        <PickRow>
           {([
             { label: 'Walk', icon: 'walk-outline', route: '/activity/steps' },
             { label: 'Cycle', icon: 'bicycle-outline', route: '/workouts/plans' },
@@ -221,7 +221,7 @@ export default function RunScreen() {
           ] as { label: string; icon: AppIconName; route: string }[]).map((c) => (
             <PickButton key={c.label} label={c.label} icon={c.icon} onPress={() => router.push(c.route as any)} />
           ))}
-        </View>
+        </PickRow>
 
         <DisclaimerBanner text="Calorie estimates use ~8.3 MET for running and your logged weight — treat them as a rough guide. Build distance slowly: increase by no more than 10% per week." />
         <BottomSpace />
@@ -249,9 +249,9 @@ const s = StyleSheet.create({
   liveStat: { flex: 1, alignItems: 'center' },
   liveVal: { color: Colors.primary, fontWeight: '900', fontSize: 20 },
   liveLab: { color: Colors.muted, fontSize: 11, fontWeight: '700', marginTop: 2 },
-  shortcutRow: { flexDirection: 'row', marginTop: 4 },
+  
   tierHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 },
   tierTitle: { color: Colors.text, fontWeight: '800', fontSize: 16 },
   tierNum: { color: Colors.primary, fontWeight: '800', fontSize: 13 },
-  cardioRow: { flexDirection: 'row' },
+  
 });
