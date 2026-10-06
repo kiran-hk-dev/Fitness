@@ -1,23 +1,18 @@
 import { create } from 'zustand';
 
+/**
+ * App-wide flags only.
+ *
+ * Steps / water / running / streaks live in `src/lib/activity.ts` behind the
+ * `useActivity` hook (they need the server + local cache), so they are NOT
+ * duplicated here. Onboarding rehydration is handled by useOnboardingStore.
+ */
 interface AppState {
   onboarded: boolean;
-  session: { email: string } | null;
-  waterTodayMl: number;
-  stepsToday: number;
-  sleepH: number;
-  streak: number;
   set: (p: Partial<AppState>) => void;
-  addWater: (ml: number) => void;
 }
 
 export const useAppStore = create<AppState>((set) => ({
   onboarded: false,
-  session: null,
-  waterTodayMl: 0,
-  stepsToday: 0,
-  sleepH: 0,
-  streak: 0,
   set: (p) => set(p),
-  addWater: (ml) => set((s) => ({ waterTodayMl: s.waterTodayMl + ml })),
 }));

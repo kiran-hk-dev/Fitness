@@ -148,6 +148,33 @@ export const Radius = { sm: 10, md: 16, lg: 24, full: 999 };
 
 export const FontSize = { xs: 12, sm: 13, md: 15, lg: 18, xl: 22, xxl: 28 };
 
+/**
+ * Layout grid.
+ *
+ * Every tiled row in the app derives from these, so tiles across different
+ * screens share one vertical axis. Previously each screen invented its own
+ * gutter (-3 / -4 / -5) and nothing lined up.
+ *
+ * Usage: a row is `marginHorizontal: -GUTTER`, and each cell is
+ * `paddingHorizontal: GUTTER`. Negative parent + positive child cancels out,
+ * so the outer edges stay flush with the cards above and below.
+ */
+export const GUTTER = 4;
+
+/** Cell size for a fixed-column grid. Use with a `-GUTTER` parent. */
+export function cell(columns: number, gutter = GUTTER) {
+  return {
+    width: `${100 / columns}%` as const,
+    paddingHorizontal: gutter,
+    paddingBottom: gutter * 2,
+  };
+}
+
+/** A flexWrap row that cancels the gutter back out to the content edge. */
+export function gridRow(gutter = GUTTER, extra?: Record<string, unknown>) {
+  return { flexDirection: 'row' as const, flexWrap: 'wrap' as const, marginHorizontal: -gutter, ...extra };
+}
+
 export const Shadow = {
   card: {
     shadowColor: '#000',

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Card, Field, SubmitButton, AuthHeader, Muted } from '../../src/components/ui';
-import { supabase } from '../../src/lib/supabase';
+import { signUpAndReport, isAlreadyRegistered } from '../../src/lib/auth';
 import { ensureProfile } from '../../src/lib/tracking';
 import { toast } from '../../src/components/Toast';
 import { AuthBackdrop } from '../../src/components/AuthBackdrop';
@@ -20,21 +20,30 @@ export default function Signup() {
     if (password.length < 6) return setErr('Password needs at least 6 characters.');
     setErr('');
     setBusy(true);
-    // 1) Create Supabase auth account
-    const { data, error } = await supabase.auth.signUp({ email, password });
-    if (error) {
-      setBusy(false);
-      setErr(error.message);
-      return;
-    }
-    // If email confirmation is ON in Supabase, there is NO session yet —
-    // sending the user to onboarding would fail every save with "Not signed in".
-    if (!data.session) {
+
+    const res = await signUpAndReport({ email: email.trim(), password });
+
+    // This project runs with email autoconfirm on, so Supabase normally hands
+    // back a session straight away. Only mention the inbox when it genuinely
+    // did not — otherwise the app tells people to wait for a mail that will
+    // never arrive.
+    if (res.status === 'confirm-email') {
       setBusy(false);
       toast('Account created — confirm your email, then log in ✓');
       return router.replace('/(auth)/login' as any);
     }
-    // 2) Session exists → store user row in Supabase so weight/height/training has an owner
+
+    if (res.status === 'error') {
+      setBusy(false);
+      setErr(
+        isAlreadyRegistered(res.message)
+          ? 'That email is already registered. Try logging in instead.'
+          : res.message,
+      );
+      return;
+    }
+
+    // Session exists → make sure a profiles row exists so weight/height/training has an owner
     try {
       await ensureProfile(name.trim() || undefined);
     } catch (e: any) {

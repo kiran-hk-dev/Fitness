@@ -2,12 +2,26 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createClient } from '@supabase/supabase-js';
 import { Platform } from 'react-native';
 
-const url = process.env.EXPO_PUBLIC_SUPABASE_URL ?? 'https://placeholder.supabase.co';
-const anon = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? 'placeholder-anon-key';
+const url = process.env.EXPO_PUBLIC_SUPABASE_URL ?? '';
+const anon = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? '';
 
-if (!process.env.EXPO_PUBLIC_SUPABASE_URL) {
-  console.warn('[supabase] EXPO_PUBLIC_SUPABASE_URL missing — using placeholder. Copy .env.example to .env');
+/**
+ * Misconfiguration used to surface as the useless "Network request failed",
+ * because the client was pointed at a placeholder host that cannot resolve.
+ * Fail fast instead: every caller already try/catches, so they can show the
+ * real reason to the user.
+ */
+export const SUPABASE_MISCONFIGURED = !url || !anon;
+export const SUPABASE_CONFIG_HINT =
+  'Supabase is not configured. Copy .env.example to .env and fill in EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY, then restart with "npx expo start -c".';
+
+if (SUPABASE_MISCONFIGURED) {
+  console.warn(`[supabase] ${SUPABASE_CONFIG_HINT}`);
 }
+
+// A syntactically valid URL keeps createClient happy while `from()` and
+// `auth.*` calls fail with the hint above instead of a DNS error.
+const SAFE_URL = url || 'http://localhost:54321';
 
 // Web SSR / static prerender runs in Node where `window` does not exist.
 // AsyncStorage's web backend touches bare `window` and crashes the web
@@ -38,7 +52,7 @@ const safeWebStorage = {
 
 // Persist the auth session on-device, otherwise the user looks
 // "signed out" after every reload and all saves fail with "Not signed in".
-export const supabase = createClient(url, anon, {
+export const supabase = createClient(SAFE_URL, anon || 'missing-anon-key', {
   auth: {
     storage: Platform.OS === 'web' ? safeWebStorage : AsyncStorage,
     autoRefreshToken: true,

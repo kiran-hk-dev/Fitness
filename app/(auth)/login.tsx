@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Card, Field, SubmitButton, AuthHeader, LinkRow } from '../../src/components/ui';
-import { supabase } from '../../src/lib/supabase';
+import { signInAndReport } from '../../src/lib/auth';
 import { ensureProfile, syncPendingProfile } from '../../src/lib/tracking';
 import { toast } from '../../src/components/Toast';
 import { AuthBackdrop } from '../../src/components/AuthBackdrop';
@@ -16,13 +16,15 @@ export default function Login() {
 
   const login = async () => {
     if (!email.includes('@')) return setErr('Enter a valid email address.');
-    if (password.length < 6) return setErr('Password needs at least 6 characters.');
+    if (!password) return setErr('Enter your password.');
     setErr('');
     setBusy(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
+    const res = await signInAndReport({ email: email.trim(), password });
+    if (res.status === 'error') {
       setBusy(false);
-      setErr(error.message + ' (Just signed up? Confirm your email first.)');
+      // The helper already words the "confirm your email" case correctly and
+      // omits it for every other failure.
+      setErr(res.message);
       return;
     }
     try {

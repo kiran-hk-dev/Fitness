@@ -47,6 +47,8 @@ export default function RootLayout() {
           <Stack.Screen name="nutrition" />
           <Stack.Screen name="yoga" />
           <Stack.Screen name="progress" />
+          <Stack.Screen name="activity" />
+          <Stack.Screen name="train" />
         </Stack>
         <ToastHost />
       </QueryClientProvider>

@@ -3,6 +3,7 @@ import { View, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Card, Field, SubmitButton, AuthHeader, LinkRow } from '../../src/components/ui';
 import { supabase } from '../../src/lib/supabase';
+import { authErrorMessage } from '../../src/lib/auth';
 import { toast } from '../../src/components/Toast';
 import { AuthBackdrop } from '../../src/components/AuthBackdrop';
 
@@ -16,13 +17,18 @@ export default function ForgotPassword() {
     if (!email.includes('@')) return setErr('Enter a valid email address.');
     setErr('');
     setBusy(true);
-    const { error } = await supabase.auth.resetPasswordForEmail(email);
-    setBusy(false);
-    if (error) {
-      setErr(error.message);
-      return;
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim());
+      setBusy(false);
+      if (error) {
+        setErr(authErrorMessage(error));
+        return;
+      }
+      toast('Reset link sent — check your email ✓');
+    } catch (e) {
+      setBusy(false);
+      setErr(authErrorMessage(e));
     }
-    toast('Reset link sent — check your email ✓');
   };
 
   return (

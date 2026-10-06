@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet, TextInput, ActivityIndicator, Image, useColorScheme } from 'react-native';
-import { Colors, Shadow, FontSize } from '../theme';
+import { Colors, Shadow, FontSize, gridRow, cell } from '../theme';
 import { AppIcon, AppIconName } from './AppIcon';
 
 function useDark() {
@@ -51,47 +51,155 @@ interface ActionProps {
   icon?: BtnIcon;
   loading?: boolean;
   disabled?: boolean;
+  style?: any;
 }
 
-/** Primary action (Save, Continue-submit, Login…). Shows spinner + locks while busy: no double taps. */
-export function PrimaryButton({ title, onPress, icon, loading, disabled }: ActionProps) {
+/** Height/weight of the primary CTA — big enough to hit without looking. */
+const CTA = { paddingVertical: 16, borderRadius: 16, fontSize: 16 };
+
+/**
+ * THE main action of a screen. Filled, full width, generous padding, and it
+ * always says what happens next. Shows a spinner and locks while busy.
+ */
+export function PrimaryButton({ title, onPress, icon, loading, disabled, style }: ActionProps) {
   const off = loading || disabled;
   return (
     <Pressable
       onPress={off ? undefined : onPress}
       disabled={off}
-      style={({ pressed }) => [useStyles().btn, off && { opacity: 0.55 }, pressed && !off && { opacity: 0.85, transform: [{ scale: 0.98 }] }]}
+      accessibilityRole="button"
+      accessibilityLabel={title}
+      style={({ pressed }) => [
+        useStyles().btn,
+        off && { opacity: 0.5 },
+        pressed && !off && { opacity: 0.88, transform: [{ scale: 0.98 }] },
+        style,
+      ]}
     >
       {loading ? (
         <ActivityIndicator size="small" color={Colors.onPrimary} style={{ marginRight: 8 }} />
       ) : icon ? (
-        <AppIcon name={icon} size={18} color={Colors.onPrimary} style={{ marginRight: 6 }} />
+        <AppIcon name={icon} size={20} color={Colors.onPrimary} style={{ marginRight: 8 }} />
       ) : null}
-      <Text style={useStyles().btnText}>{loading ? 'Working…' : title}</Text>
+      <Text style={[useStyles().btnText, { color: Colors.onPrimary }]}>{loading ? 'Working…' : title}</Text>
+    </Pressable>
+  );
+}
+
+/** Big feature button used in grids on Home/Activity (icon above label).
+ *  Sized by the caller (see `half` in useStyles) — NOT flex:1, because
+ *  flex:1 means flexBasis:0 and inside a flexWrap row the items never wrap. */
+export function BigActionButton({
+  title,
+  hint,
+  icon,
+  onPress,
+  color = Colors.primary,
+  badge,
+  style,
+}: {
+  title: string;
+  hint?: string;
+  icon: BtnIcon;
+  onPress: () => void;
+  color?: string;
+  badge?: string;
+  style?: any;
+}) {
+  const s = useStyles();
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={hint ? `${title}. ${hint}` : title}
+      style={({ pressed }) => [
+        s.bigAction,
+        { borderColor: color, backgroundColor: color + '16' },
+        pressed && { opacity: 0.85, transform: [{ scale: 0.96 }] },
+        style,
+      ]}
+    >
+      <View style={[s.bigActionIcon, { backgroundColor: color }]}>
+        <AppIcon name={icon} size={24} color={Colors.bg} />
+      </View>
+      <Text style={[s.bigActionTitle, { color: Colors.text }]} numberOfLines={2}>{title}</Text>
+      {hint ? <Text style={s.bigActionHint} numberOfLines={2}>{hint}</Text> : null}
+      {badge ? (
+        <View style={[s.bigActionBadge, { backgroundColor: color }]}>
+          <Text style={s.bigActionBadgeText}>{badge}</Text>
+        </View>
+      ) : null}
+    </Pressable>
+  );
+}
+
+/** Row of tiled buttons. Derives its gutter from the shared layout grid so the
+ *  tiles line up with the cards above and below on every screen. */
+export function ButtonGrid({ children, columns = 2, style }: {
+  children: React.ReactNode;
+  columns?: number;
+  style?: any;
+}) {
+  return <View style={[gridRow(), style]}>{children}</View>;
+}
+
+/** Cell sizing for ButtonGrid children — spread it onto BigActionButton. */
+export function gridCell(columns = 2) {
+  return cell(columns);
+}
+
+/** Row of PickButtons with the same gutter discipline as ButtonGrid. */
+export function PickRow({ children, style }: { children: React.ReactNode; style?: any }) {
+  return <View style={[useStyles().pickRow, style]}>{children}</View>;
+}
+
+/** Choice between two/three options in a row — which water amount, which run.
+ *  Row gutter comes from PickRow, so the button itself has no side margin. */
+export function PickButton({ label, onPress, selected, icon }: {
+  label: string; onPress: () => void; selected?: boolean; icon?: BtnIcon;
+}) {
+  const dark = useDark();
+  const s = useStyles();
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityState={{ selected: !!selected }}
+      style={({ pressed }) => [
+        s.pick,
+        {
+          borderColor: selected ? Colors.primary : dark ? Colors.border : Colors.borderLight,
+          backgroundColor: selected ? Colors.primarySoft : 'transparent',
+        },
+        pressed && { opacity: 0.8, transform: [{ scale: 0.97 }] },
+      ]}
+    >
+      {icon ? <AppIcon name={icon} size={17} color={selected ? Colors.primary : Colors.muted} style={{ marginRight: 6 }} /> : null}
+      <Text style={[s.pickText, { color: selected ? Colors.primary : dark ? Colors.text : Colors.textLight }]}>{label}</Text>
     </Pressable>
   );
 }
 
 /** SUBMIT = completing/sending (finish plan, send form). Deeper shade than Save. */
-export function SubmitButton({ title, onPress, icon = 'send', loading, disabled }: ActionProps) {
+export function SubmitButton({ title, onPress, icon = 'send', loading, disabled, style }: ActionProps) {
   const off = loading || disabled;
   return (
     <Pressable
       onPress={off ? undefined : onPress}
       disabled={off}
-      style={({ pressed }) => [useStyles().submit, off && { opacity: 0.55 }, pressed && !off && { opacity: 0.88, transform: [{ scale: 0.98 }] }]}
+      style={({ pressed }) => [useStyles().submit, off && { opacity: 0.5 }, pressed && !off && { opacity: 0.88, transform: [{ scale: 0.98 }] }, style]}
     >
       {loading ? (
-        <ActivityIndicator size="small" color={Colors.onPrimary} style={{ marginRight: 8 }} />
+        <ActivityIndicator size="small" color="#FFFFFF" style={{ marginRight: 8 }} />
       ) : (
-        <AppIcon name={icon} size={18} color={Colors.onPrimary} style={{ marginRight: 6 }} />
+        <AppIcon name={icon} size={18} color="#FFFFFF" style={{ marginRight: 6 }} />
       )}
       <Text style={useStyles().submitText}>{loading ? 'Sending…' : title}</Text>
     </Pressable>
   );
 }
 
-export function GhostButton({ title, onPress, icon, loading, disabled }: ActionProps) {
+export function GhostButton({ title, onPress, icon, loading, disabled, style }: ActionProps) {
   const dark = useDark();
   const off = loading || disabled;
   return (
@@ -101,8 +209,9 @@ export function GhostButton({ title, onPress, icon, loading, disabled }: ActionP
       style={({ pressed }) => [
         useStyles().ghost,
         { borderColor: dark ? Colors.border : Colors.borderLight, backgroundColor: dark ? Colors.bgSoft : '#F1F5F9' },
-        off && { opacity: 0.55 },
+        off && { opacity: 0.5 },
         pressed && !off && { opacity: 0.8 },
+        style,
       ]}
     >
       {loading ? (
@@ -417,28 +526,42 @@ const useStyles = () => StyleSheet.create({
   muted: { color: Colors.muted, fontSize: FontSize.sm, lineHeight: 19 },
   btn: {
     backgroundColor: Colors.primary,
-    borderRadius: 14,
-    paddingVertical: 13,
-    paddingHorizontal: 16,
+    borderRadius: CTA.borderRadius,
+    paddingVertical: CTA.paddingVertical,
+    paddingHorizontal: 18,
     alignItems: 'center',
     justifyContent: 'center',
-    marginVertical: 5,
+    marginVertical: 6,
     flexDirection: 'row',
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 10,
+    elevation: 5,
   },
-  btnText: { color: Colors.onPrimary, fontWeight: '800', fontSize: 15 },
+  btnText: { fontWeight: '800', fontSize: CTA.fontSize, letterSpacing: 0.2 },
   submit: {
     backgroundColor: Colors.primaryDark,
-    borderRadius: 14,
-    paddingVertical: 13,
-    paddingHorizontal: 16,
+    borderRadius: 16,
+    paddingVertical: 14,
+    paddingHorizontal: 18,
     alignItems: 'center',
     justifyContent: 'center',
-    marginVertical: 5,
+    marginVertical: 6,
     flexDirection: 'row',
   },
   submitText: { color: '#FFFFFF', fontWeight: '800', fontSize: 15 },
-  ghost: { borderRadius: 12, paddingVertical: 9, paddingHorizontal: 12, alignItems: 'center', justifyContent: 'center', marginVertical: 5, flexDirection: 'row', borderWidth: 1 },
-  ghostText: { fontWeight: '700', fontSize: 13 },
+  ghost: { borderRadius: 14, paddingVertical: 12, paddingHorizontal: 14, alignItems: 'center', justifyContent: 'center', marginVertical: 6, flexDirection: 'row', borderWidth: 1.5 },
+  ghostText: { fontWeight: '700', fontSize: 14 },
+  bigAction: { minHeight: 112, borderRadius: 20, borderWidth: 2, paddingVertical: 14, paddingHorizontal: 6, alignItems: 'center', justifyContent: 'center' },
+  bigActionIcon: { width: 50, height: 50, borderRadius: 25, alignItems: 'center', justifyContent: 'center' },
+  bigActionTitle: { fontWeight: '800', fontSize: 15, textAlign: 'center', marginTop: 8 },
+  bigActionHint: { color: Colors.muted, fontSize: 11, fontWeight: '600', textAlign: 'center', marginTop: 2, lineHeight: 15 },
+  bigActionBadge: { position: 'absolute', top: 8, right: 8, borderRadius: 999, paddingHorizontal: 7, paddingVertical: 2 },
+  bigActionBadgeText: { color: '#FFFFFF', fontSize: 9, fontWeight: '900', letterSpacing: 0.4 },
+  pickRow: { flexDirection: 'row', marginHorizontal: -4 },
+  pick: { flex: 1, borderWidth: 2, borderRadius: 14, paddingVertical: 13, paddingHorizontal: 8, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', marginHorizontal: 4 },
+  pickText: { fontWeight: '800', fontSize: 14 },
   small: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', borderRadius: 999, paddingVertical: 7, paddingHorizontal: 14, borderWidth: 1, alignSelf: 'flex-start', marginVertical: 4 },
   smallText: { fontWeight: '800', fontSize: 13 },
   iconBtn: { width: 36, height: 36, borderRadius: 18, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },

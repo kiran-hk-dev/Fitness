@@ -4,7 +4,7 @@ import { Card, H1, Body, Muted, BottomSpace, SectionTitle, TopSpace } from '../.
 import { supabase } from '../../src/lib/supabase';
 import { toast } from '../../src/components/Toast';
 import { BottomNav } from '../../src/components/BottomNav';
-import { Colors } from '../../src/theme';
+import { Colors, gridRow } from '../../src/theme';
 
 const HABITS = [
   { id: 'water', label: 'Water', emoji: '💧' },
@@ -164,7 +164,7 @@ export default function Habits() {
 }
 
 const useStyles = () => StyleSheet.create({
-  grid: { flexDirection: 'row', flexWrap: 'wrap', marginHorizontal: -4 },
+  grid: gridRow(),
   tile: {
     width: '31.3%', backgroundColor: Colors.card, borderRadius: 16, borderWidth: 1,
     borderColor: Colors.border, paddingVertical: 14, paddingHorizontal: 4,
