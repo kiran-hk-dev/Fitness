@@ -4,7 +4,7 @@ import { Card, H1, Body, Muted, BottomSpace, SectionTitle, TopSpace } from '../.
 import { supabase } from '../../src/lib/supabase';
 import { toast } from '../../src/components/Toast';
 import { BottomNav } from '../../src/components/BottomNav';
-import { Colors, gridRow } from '../../src/theme';
+import { Colors, gridRow, cell } from '../../src/theme';
 
 const HABITS = [
   { id: 'water', label: 'Water', emoji: '💧' },
@@ -104,51 +104,56 @@ export default function Habits() {
       <Muted>Tap a tile to log today — tap again to undo.</Muted>
 
       <SectionTitle title="Today — tap to log" icon="today-outline" />
-      <View style={useStyles().grid}>
+      <View style={gridRow()}>
         {HABITS.map((h) => {
           const on = todaySet.has(h.id);
           const loading = busy === h.id;
           return (
-            <Pressable
-              key={h.id}
-              onPress={() => toggle(h.id)}
-              disabled={!!busy}
-              style={[
-                useStyles().tile,
-                on && { borderColor: Colors.primary, borderWidth: 2, backgroundColor: Colors.primarySoft },
-                !!busy && !loading && { opacity: 0.6 },
-              ]}
-            >
-              <Text style={useStyles().tileEmoji}>{h.emoji}</Text>
-              <Text style={useStyles().tileText}>{h.label}</Text>
-              <Text style={[useStyles().tileState, { color: on ? Colors.primary : Colors.muted }]}>
-                {loading ? '…' : on ? '✓ Logged' : '○ Tap to log'}
-              </Text>
-              <Text style={useStyles().streak}>🔥 {streak(h.id)}d streak</Text>
-            </Pressable>
+            // Wrapper carries the gutter so the bordered tiles below have real
+            // space between them and the row fills the width exactly.
+            <View key={h.id} style={cell(3)}>
+              <Pressable
+                onPress={() => toggle(h.id)}
+                disabled={!!busy}
+                style={[
+                  useStyles().tile,
+                  on && { borderColor: Colors.primary, borderWidth: 1.5, backgroundColor: Colors.primarySoft },
+                  !!busy && !loading && { opacity: 0.6 },
+                ]}
+              >
+                <Text style={useStyles().tileEmoji}>{h.emoji}</Text>
+                <Text style={useStyles().tileText} numberOfLines={1}>{h.label}</Text>
+                <Text style={[useStyles().tileState, { color: on ? Colors.primary : Colors.muted }]} numberOfLines={1}>
+                  {loading ? '…' : on ? '✓ Logged' : '○ Tap to log'}
+                </Text>
+                <Text style={useStyles().streak}>🔥 {streak(h.id)}d</Text>
+              </Pressable>
+            </View>
           );
         })}
       </View>
 
       <SectionTitle title="This week" icon="calendar-outline" />
       <Card>
+        {/* Scrolls horizontally because the label column + 7 day cells are
+            wider than a phone; widths are fixed so dots stay under headers. */}
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <View style={{ minWidth: '100%' }}>
+          <View>
             <View style={useStyles().weekHead}>
-              <Text style={[useStyles().weekCell, { width: 118, textAlign: 'left' }]}> </Text>
+              <Text style={[useStyles().weekCell, useStyles().weekLabel]} numberOfLines={1}> </Text>
               {orderedDays.map((k) => (
-                <Text key={k} style={[useStyles().weekCell, { width: 34 }]}>
+                <Text key={k} style={[useStyles().weekCell, useStyles().weekDay]} numberOfLines={1}>
                   {new Date(k + 'T12:00').toLocaleDateString(undefined, { weekday: 'narrow' })}
                 </Text>
               ))}
             </View>
             {HABITS.map((h) => (
               <View key={h.id} style={useStyles().weekRow}>
-                <Text style={[useStyles().weekCell, { width: 118, textAlign: 'left' }]} numberOfLines={1}>
+                <Text style={[useStyles().weekCell, useStyles().weekLabel]} numberOfLines={1}>
                   {h.emoji} {h.label}
                 </Text>
                 {orderedDays.map((k) => (
-                  <Text key={k} style={[useStyles().weekCell, { width: 34 }]}>
+                  <Text key={k} style={[useStyles().weekCell, useStyles().weekDay]}>
                     {week[k]?.has(h.id) ? '🟠' : '·'}
                   </Text>
                 ))}
@@ -165,16 +170,24 @@ export default function Habits() {
 
 const useStyles = () => StyleSheet.create({
   grid: gridRow(),
+  // The tile carries no width or gutter: the grid wrapper owns both, so the
+  // bordered boxes have real space between them and the row fills the width.
   tile: {
-    width: '31.3%', backgroundColor: Colors.card, borderRadius: 16, borderWidth: 1,
+    backgroundColor: Colors.card, borderRadius: 16, borderWidth: 1.5,
     borderColor: Colors.border, paddingVertical: 14, paddingHorizontal: 4,
-    alignItems: 'center', margin: '1%',
+    alignItems: 'center', height: 116,
   },
-  tileEmoji: { fontSize: 26 },
-  tileText: { color: Colors.text, fontSize: 12, fontWeight: '700', marginTop: 6, textAlign: 'center' },
-  tileState: { fontSize: 11, fontWeight: '800', marginTop: 4 },
-  streak: { color: Colors.muted, fontSize: 10, marginTop: 2 },
+  tileEmoji: { fontSize: 22 },
+  tileText: { color: Colors.text, fontSize: 11, fontWeight: '700', marginTop: 5, textAlign: 'center' },
+  tileState: { fontSize: 10.5, fontWeight: '800', marginTop: 3, textAlign: 'center' },
+  streak: { color: Colors.muted, fontSize: 10, marginTop: 3 },
   weekHead: { flexDirection: 'row', alignItems: 'center', marginBottom: 4 },
   weekRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 6, borderTopWidth: 1, borderTopColor: Colors.border },
+  // Label column and day cells share one width so the grid lines up. 118+7*34
+  // is wider than a 360pt screen, so the whole grid scrolls horizontally and
+  // the cells must stay fixed-width for the dots to align with the headers.
   weekCell: { color: Colors.text, fontSize: 12, textAlign: 'center' },
+  weekLabel: { width: 104, textAlign: 'left' },
+  weekDay: { width: 32 },
+  weekDot: { fontSize: 13 },
 });

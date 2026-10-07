@@ -76,8 +76,7 @@ export default function YogaDetail() {
                 onPress: async () => {
                   const { error } = await supabase.from('yoga_sessions').delete().eq('id', custom.id);
                   if (error) return toast(error.message, 'error');
-                  toast('Flow deleted');
-                  router.back();
+                                  router.back();
                 },
               },
             ]);

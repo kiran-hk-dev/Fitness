@@ -142,8 +142,7 @@ export default function ExerciseDetail() {
                   if (customEx) {
                     const { error } = await supabase.from('exercises').delete().eq('id', customEx.id);
                     if (error) return toast(error.message, 'error');
-                    toast('Exercise deleted');
-                  } else {
+                                    } else {
                     await hideExercise(e.id);
                     toast('Hidden — restore it from the library footer');
                   }

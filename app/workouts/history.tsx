@@ -41,8 +41,7 @@ export default function History() {
         text: 'Delete', style: 'destructive', onPress: async () => {
           const { error } = await supabase.from('workout_sessions').delete().eq('id', rowId);
           if (error) return toast(error.message, 'error');
-          toast('Session deleted');
-          load();
+                load();
         },
       },
     ]);
@@ -85,7 +84,7 @@ export default function History() {
         {checks.length === 0 ? <Muted>No checkmarks yet — open Active Workout and tap ✓.</Muted> : null}
         {checks.map((c) => (
           <View key={c.id} style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
-            <Body>✓ {c.item_name}</Body>
+            <Body numberOfLines={1}>✓ {c.item_name}</Body>
             <View style={{ flex: 1 }} />
             <IconButton icon="close" onPress={() => removeCheck(c.id)} />
           </View>

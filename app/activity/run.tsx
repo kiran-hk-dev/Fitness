@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, TextInput, Pressable, RefreshControl } from 'react-native';
 import { useRouter } from 'expo-router';
 import {
-  PageHeader, Card, Body, Muted, PrimaryButton, GhostButton, PickButton, PickRow,
+  PageHeader, Card, Muted, PrimaryButton, GhostButton, PickButton, PickRow,
   BottomSpace, TopSpace, SectionTitle, DisclaimerBanner, DataRow,
 } from '../../src/components/ui';
 import { CountUp, AnimatedBar } from '../../src/components/ActivityVisuals';
@@ -72,8 +72,7 @@ export default function RunScreen() {
     if (!(d > 0) && !(m > 0)) return toast('Add a distance or a time first', 'error');
     setBusy(true);
     try {
-      const res = await saveRun({ distanceKm: d, durationMin: m });
-      toast(`Run saved — ${res.distanceKm} km · ${res.calories} kcal`);
+      await saveRun({ distanceKm: d, durationMin: m });
       setDist('');
       setMins('');
       setElapsed(0);
@@ -197,8 +196,7 @@ export default function RunScreen() {
                   action={
                     <Pressable hitSlop={8} onPress={async () => {
                       await deleteRun(r);
-                      toast('Run removed');
-                      await refresh();
+                                      await refresh();
                       setWeek(await fetchRunsForRange(7));
                     }}>
                       <AppIcon name="trash-outline" size={18} color={Colors.danger} />
@@ -212,13 +210,18 @@ export default function RunScreen() {
           )}
         </Card>
 
+        {/* Other cardio. These must land on cardio/mobility pages — Cycle used to
+            point at the strength programs and Mobility at yoga, which is not
+            what either label means. */}
         <SectionTitle title="Other cardio" icon="heart-outline" />
         <PickRow>
-          {([
-            { label: 'Walk', icon: 'walk-outline', route: '/activity/steps' },
-            { label: 'Cycle', icon: 'bicycle-outline', route: '/workouts/plans' },
-            { label: 'Mobility', icon: 'body-outline', route: '/yoga' },
-          ] as { label: string; icon: AppIconName; route: string }[]).map((c) => (
+          {(
+            [
+              { label: 'Walk', icon: 'walk-outline', route: '/activity/steps' },
+              { label: 'Cardio', icon: 'run-outline', route: '/activity/run' },
+              { label: 'Mobility', icon: 'pulse-outline', route: '/nutrition/recovery' },
+            ] as { label: string; icon: AppIconName; route: string }[]
+          ).map((c) => (
             <PickButton key={c.label} label={c.label} icon={c.icon} onPress={() => router.push(c.route as any)} />
           ))}
         </PickRow>
@@ -251,7 +254,7 @@ const s = StyleSheet.create({
   liveLab: { color: Colors.muted, fontSize: 11, fontWeight: '700', marginTop: 2 },
   
   tierHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 },
-  tierTitle: { color: Colors.text, fontWeight: '800', fontSize: 16 },
+  tierTitle: { color: Colors.text, fontWeight: '800', fontSize: 15, flex: 1, marginRight: 8 },
   tierNum: { color: Colors.primary, fontWeight: '800', fontSize: 13 },
   
 });

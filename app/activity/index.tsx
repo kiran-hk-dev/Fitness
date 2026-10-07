@@ -2,10 +2,10 @@ import React, { useCallback, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, Pressable, RefreshControl } from 'react-native';
 import { useRouter } from 'expo-router';
 import {
-  PageHeader, Card, Body, Muted, PrimaryButton, GhostButton, BigActionButton,
+  PageHeader, Card, Body, Muted, PrimaryButton, GhostButton, BigActionButton, ButtonGrid,
   BottomSpace, TopSpace, SectionTitle, Chip,
 } from '../../src/components/ui';
-import { RingProgress, CountUp, AnimatedBar } from '../../src/components/ActivityVisuals';
+import { RingProgress, CountUp } from '../../src/components/ActivityVisuals';
 import { MilestoneMap } from '../../src/components/MilestoneMap';
 import { Celebration } from '../../src/components/Celebration';
 import { AppIcon } from '../../src/components/AppIcon';
@@ -35,7 +35,6 @@ export default function ActivityHub() {
       setBusy(true);
       try {
         await addSteps(n);
-        toast(`+${n.toLocaleString()} steps`);
       } catch (e: any) {
         toast(e?.message ?? 'Could not save', 'error');
       } finally {
@@ -51,7 +50,6 @@ export default function ActivityHub() {
       setBusy(true);
       try {
         await addWater(ml);
-        toast(`+${ml} ml 💧`);
       } catch (e: any) {
         toast(e?.message ?? 'Could not save', 'error');
       } finally {
@@ -98,7 +96,7 @@ export default function ActivityHub() {
 
         {/* One-tap logging */}
         <Card>
-          <SectionTitle title="Quick add" icon="add-circle" right="no menu needed" />
+          <SectionTitle title="Quick add" icon="add-circle" right="no menu needed" tight />
           <Text style={s.quickLab}>STEPS</Text>
           <View style={s.chipRow}>
             {[500, 1000, 2000, 5000].map((n) => (
@@ -168,13 +166,13 @@ export default function ActivityHub() {
           </View>
         </Card>
 
-        <SectionTitle title="Go deeper" icon="layers-outline" />
-        <View style={s.grid}>
-          <BigActionButton style={s.half} title="Step detail" hint="Badges, goal, history" icon="footsteps-outline" onPress={() => router.push('/activity/steps' as any)} />
-          <BigActionButton style={s.half} title="Water detail" hint="Bottles and target" icon="water-outline" color={Colors.accent} onPress={() => router.push('/activity/water' as any)} />
-          <BigActionButton style={s.half} title="Run detail" hint="Timer, pace, week" icon="run-outline" color="#F472B6" onPress={() => router.push('/activity/run' as any)} />
-          <BigActionButton style={s.half} title="Charts" hint="Steps + weight graphs" icon="stats-chart-outline" color="#A78BFA" onPress={() => router.push('/progress/strength' as any)} />
-        </View>
+        <SectionTitle title="Go deeper" icon="layers-outline" hint="Full detail for each" />
+        <ButtonGrid>
+          <BigActionButton title="Step detail" hint="Badges, goal, history" icon="footsteps-outline" onPress={() => router.push('/activity/steps' as any)} />
+          <BigActionButton title="Water detail" hint="Bottles and target" icon="water-outline" color={Colors.accent} onPress={() => router.push('/activity/water' as any)} />
+          <BigActionButton title="Run detail" hint="Timer, pace, week" icon="run-outline" color="#F472B6" onPress={() => router.push('/activity/run' as any)} />
+          <BigActionButton title="Charts" hint="Steps + weight graphs" icon="stats-chart-outline" color="#A78BFA" onPress={() => router.push('/progress/strength' as any)} />
+        </ButtonGrid>
 
         <View style={{ flexDirection: 'row', marginTop: 6 }}>
           <Chip label="Counts sync to your account" icon="cloud-upload-outline" color={Colors.muted} />

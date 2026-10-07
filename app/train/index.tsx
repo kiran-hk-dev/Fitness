@@ -74,7 +74,7 @@ const LANES: Lane[] = [
     route: '/nutrition/recovery',
     routes: [
       { label: 'Recovery plan', icon: 'heart-outline', to: '/nutrition/recovery' },
-      { label: 'Stretch & mobility', icon: 'repeat-outline', to: '/yoga' },
+      { label: 'Stretch & mobility', icon: 'repeat-outline', to: '/nutrition/recovery' },
       { label: 'Habits', icon: 'checkmark-circle-outline', to: '/progress/habits' },
     ],
   },

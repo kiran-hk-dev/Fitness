@@ -148,11 +148,11 @@ export default function ActiveWorkout() {
     setProgress(e.id, (p) => ({ ...p, done: [...p.done, { exerciseId: e.id, setNo: no, reps: r, weight: w, at: Date.now() }] }));
     setExpanded(e.id);
 
-    setBusy(true);
+setBusy(true);
     try {
+      // No toast: the pip filling and the logged-set line are the feedback.
+      // This fired on every single set, which was pure noise.
       await recordSet({ sessionId: sessionRef.current.id, exerciseId: e.id, exerciseName: e.name, setNo: no, reps: r, weight: w });
-      const left = planned.length - no;
-      toast(left > 0 ? `Set ${no} logged ✓ · ${left} to go · rest ${e.rest_sec}s` : `Set ${no} logged ✓ · exercise complete!`);
     } catch (err: any) {
       toast('Saved on device — will sync later', 'error');
     } finally {
@@ -245,7 +245,7 @@ export default function ActiveWorkout() {
 
       <SectionTitle title="Done for today?" icon="flag-outline" />
       <PrimaryButton title={`Finish workout · ${finishedCount}/${ex.length}`} icon="checkmark-done" onPress={finish} />
-      <GhostButton title="Discard this session" icon="trash-outline" onPress={async () => { await clearLocalSession(); toast('Session cleared'); router.back(); }} />
+      <GhostButton title="Discard this session" icon="trash-outline" onPress={async () => { await clearLocalSession(); router.back(); }} />
       <BottomSpace />
     </ScrollView>
   );
@@ -406,7 +406,7 @@ const s = StyleSheet.create({
   stat: { flex: 1, alignItems: 'center' },
   statVal: { color: Colors.text, fontWeight: '900', fontSize: 20 },
   statLab: { color: Colors.muted, fontSize: 11, fontWeight: '700', marginTop: 2 },
-  row: { paddingHorizontal: 12, paddingTop: 0, paddingBottom: 14 },
+  row: { paddingHorizontal: 12, paddingTop: 4, paddingBottom: 14, overflow: 'hidden' },
   rowHead: { flexDirection: 'row', alignItems: 'center', paddingTop: 12 },
   num: { width: 28, height: 28, borderRadius: 14, backgroundColor: Colors.raised, alignItems: 'center', justifyContent: 'center', marginRight: 10 },
   numText: { color: Colors.text, fontWeight: '900', fontSize: 13 },

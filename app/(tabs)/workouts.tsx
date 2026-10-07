@@ -1,4 +1,4 @@
-import { ScrollView, View, Pressable, StyleSheet } from 'react-native';
+import { ScrollView, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import {
   Card, Body, Muted, ActionCard, BottomSpace, SectionTitle, TopSpace, PageHeader,
@@ -8,7 +8,7 @@ import { ExerciseGallery } from '../../src/components/ExercisePhoto';
 import { EXERCISES } from '../../src/data/exercises';
 import { WORKOUT_PLANS } from '../../src/data/workoutPlans';
 import { phaseForWeek, PHASE_COPY } from '../../src/utils/progression';
-import { Colors, cell } from '../../src/theme';
+import { Colors } from '../../src/theme';
 
 /**
  * This tab is STRENGTH only. Yoga, running and mobility each have their own
@@ -35,26 +35,23 @@ export default function WorkoutsTab() {
       </Card>
 
       {/* The other kinds of training, side by side and clearly separated. */}
-      <SectionTitle title="Not strength?" icon="git-branch-outline" right="tap to switch" />
-      <ButtonGrid>
+      <SectionTitle title="Something else?" icon="git-branch-outline" hint="Each kind trains differently" />
+<ButtonGrid>
         <BigActionButton
-          style={cell(2)}
           title="Yoga"
-          hint="Sessions + pose library"
+          hint="Sessions and poses"
           icon="body-outline"
           color="#2DD4BF"
           onPress={() => router.push('/yoga' as any)}
         />
         <BigActionButton
-          style={cell(2)}
           title="Running"
-          hint="Timer, pace, calories"
+          hint="Timer and pace"
           icon="run-outline"
           color="#EF4444"
           onPress={() => router.push('/activity/run' as any)}
         />
         <BigActionButton
-          style={cell(2)}
           title="Mobility"
           hint="Stretch and recover"
           icon="pulse-outline"
@@ -62,9 +59,8 @@ export default function WorkoutsTab() {
           onPress={() => router.push('/nutrition/recovery' as any)}
         />
         <BigActionButton
-          style={cell(2)}
           title="All training"
-          hint="Every kind, one hub"
+          hint="Every kind of training"
           icon="layers-outline"
           onPress={() => router.push('/train' as any)}
         />

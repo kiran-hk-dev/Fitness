@@ -1,5 +1,5 @@
 import { GUTTER, cell, gridRow } from '../src/theme';
-import { MEAL_SLOTS, slotMeta } from '../src/lib/meals';
+import { MEAL_SLOTS, slotMeta, LONGEST_SLOT_LABEL } from '../src/lib/meals';
 
 /**
  * Layout guards.
@@ -12,7 +12,9 @@ import { MEAL_SLOTS, slotMeta } from '../src/lib/meals';
 
 describe('layout grid', () => {
   it('has a single gutter value', () => {
-    expect(GUTTER).toBe(4);
+    // 6 => two cards 6px apart, which is enough to read as separate. The exact
+    // number is irrelevant; having ONE value is the point.
+    expect(GUTTER).toBe(6);
   });
 
   it('cell() splits the row into the requested columns', () => {
@@ -62,31 +64,44 @@ describe('layout grid', () => {
 });
 
 describe('meal slot labels', () => {
-  it('every slot has a short label that is actually short', () => {
+  it('shows the real word, not an abbreviation', () => {
+    expect(MEAL_SLOTS.find((m) => m.id === 'breakfast')!.label).toBe('Breakfast');
+    expect(MEAL_SLOTS.map((m) => m.label)).toEqual(['Breakfast', 'Lunch', 'Dinner', 'Snack']);
+  });
+
+  it('no label is a truncated fragment', () => {
     for (const m of MEAL_SLOTS) {
-      expect(m.short.length).toBeGreaterThan(0);
-      expect(m.short.length).toBeLessThanOrEqual(6);
+      // the old UI did label.slice(0, 4) which rendered "Brea"
+      expect(m.label).not.toBe(m.label.slice(0, 4));
     }
   });
 
-  it('no slot label is a naive 4-character slice', () => {
-    // the old UI did label.slice(0, 4), which rendered "Brea" and "Lunc"
-    for (const m of MEAL_SLOTS) {
-      expect(m.short).not.toBe(m.label.slice(0, 4));
-    }
-    // "Breakfast" must not appear truncated
-    expect(MEAL_SLOTS.find((m) => m.id === 'breakfast')!.short).toBe('Bfst');
+  it('the longest label fits a quarter-width tab at 360dp', () => {
+    // 360dp screen - 32 screen padding + gutter = 340 / 4 = 85 per cell,
+    // minus 12 gutter padding = 73 for the box, minus 8 inner padding = 65.
+    const available = 360 - 32 + GUTTER * 2;
+    const cellInner = available / 4 - GUTTER * 2;
+    const textRoom = cellInner - 8;
+    // bold system sans averages ~0.58em per character
+    const needed = LONGEST_SLOT_LABEL.length * 0.58 * 10.5;
+    expect(textRoom).toBeGreaterThan(needed);
   });
 
-  it('short labels are unique so tabs are distinguishable', () => {
-    const shorts = MEAL_SLOTS.map((m) => m.short);
-    expect(new Set(shorts).size).toBe(shorts.length);
+  it('every slot has a label and emoji', () => {
+    for (const m of MEAL_SLOTS) {
+      expect(m.label.length).toBeGreaterThan(0);
+      expect(m.emoji.length).toBeGreaterThan(0);
+    }
+  });
+
+  it('labels are unique so tabs are distinguishable', () => {
+    const labels = MEAL_SLOTS.map((m) => m.label);
+    expect(new Set(labels).size).toBe(labels.length);
   });
 
   it('slotMeta returns a full shape for an unknown slot', () => {
     const m = slotMeta('brunch');
     expect(m.label).toBe('brunch');
-    expect(m.short.length).toBeGreaterThan(0);
     expect(m.emoji.length).toBeGreaterThan(0);
   });
 });

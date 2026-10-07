@@ -21,14 +21,14 @@ export default function TabsLayout() {
           backgroundColor: Colors.bgSoft,
           borderTopColor: Colors.border,
           borderTopWidth: 1,
-          height: 66,
-          paddingBottom: 10,
+          height: 62,
+          paddingBottom: 8,
           paddingTop: 6,
         },
-        tabBarLabelStyle: { fontSize: 11, fontWeight: '700' },
+        tabBarLabelStyle: { fontSize: 10.5, fontWeight: '700' },
         tabBarIcon: ({ color, size, focused }) => {
           const pair = ICONS[route.name] ?? { on: 'ellipse', off: 'ellipse-outline' };
-          return <AppIcon name={focused ? pair.on : pair.off} size={size + 2} color={color} />;
+          return <AppIcon name={focused ? pair.on : pair.off} size={size} color={color} />;
         },
       })}
     >

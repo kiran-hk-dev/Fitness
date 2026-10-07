@@ -50,8 +50,7 @@ export default function Search() {
         onPress: async () => {
           try {
             await deleteOwnFood(row.id);
-            toast('Food deleted');
-            loadCustom();
+                  loadCustom();
           } catch (e: any) {
             toast(e?.message ?? 'Delete failed', 'error');
           }
@@ -139,7 +138,9 @@ const useStyles = () => StyleSheet.create({
   photoRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
   kcal: { color: Colors.text, fontWeight: '800', fontSize: 20 },
   kcalUnit: { color: Colors.muted, fontSize: 10 },
-  gridName: { color: Colors.text, fontWeight: '700', fontSize: 13, minHeight: 32 },
+  // numberOfLines={2} at 13px needs ~34px; 36 leaves headroom so a long food
+  // name cannot clip against the macro row below it.
+  gridName: { color: Colors.text, fontWeight: '700', fontSize: 13, minHeight: 36, lineHeight: 17 },
   macros: { flexDirection: 'row', marginTop: 6 },
   p: { color: Colors.primary, fontWeight: '800', fontSize: 12, marginRight: 8 },
   c: { color: '#EAB308', fontWeight: '800', fontSize: 12, marginRight: 8 },

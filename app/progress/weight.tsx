@@ -41,7 +41,6 @@ export default function Weight() {
     try {
       // Stored in Supabase: profiles (current) + body_metrics (history)
       await saveWeightHeight({ weightKg: weight ? w : null, heightCm: height ? h : null });
-      toast('Saved ✓ — added to your history');
       load();
     } catch (e: any) {
       setErr(e?.message ?? 'Save failed — try again.');
@@ -55,8 +54,7 @@ export default function Weight() {
         text: 'Delete', style: 'destructive', onPress: async () => {
           const { error } = await supabase.from('body_metrics').delete().eq('id', rowId);
           if (error) return toast(error.message, 'error');
-          toast('Entry deleted');
-          load();
+              load();
         },
       },
     ]);
@@ -74,7 +72,7 @@ export default function Weight() {
 
       {chrono.length > 1 ? (
         <Card>
-          <SectionTitle title="Trend" icon="trending-up-outline" right={`${chrono.length} entries`} />
+          <SectionTitle title="Trend" icon="trending-up-outline" right={`${chrono.length} entries`} tight />
           <WeightChart
             labels={chrono.map((r) => new Date(r.logged_at).toLocaleDateString(undefined, { day: 'numeric', month: 'numeric' }))}
             values={chrono.map((r) => Number(r.weight_kg) || 0)}

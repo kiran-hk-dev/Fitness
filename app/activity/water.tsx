@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, Pressable, RefreshControl } from 'react-native';
 import { useRouter } from 'expo-router';
 import {
-  PageHeader, Card, Body, Muted, PrimaryButton, GhostButton, PickButton, PickRow,
+  PageHeader, Card, Body, PrimaryButton, GhostButton, PickButton, PickRow,
   BottomSpace, TopSpace, SectionTitle, DisclaimerBanner,
 } from '../../src/components/ui';
 import { RingProgress, CountUp } from '../../src/components/ActivityVisuals';
@@ -11,6 +11,7 @@ import { useActivity } from '../../src/hooks/useActivity';
 import { toast } from '../../src/components/Toast';
 import { hydrationMessage, waterTargetMl } from '../../src/utils/hydration';
 import { DEFAULT_WATER_TARGET, waterProgress } from '../../src/utils/steps';
+import { getWaterTarget, setWaterTarget } from '../../src/lib/targets';
 import { Colors } from '../../src/theme';
 
 const GOAL_CHOICES = [2000, 2500, 3000, 3500];
@@ -47,6 +48,29 @@ export default function WaterScreen() {
   const [goal, setGoal] = useState(DEFAULT_WATER_TARGET);
   const [busy, setBusy] = useState(false);
 
+  // The target is shared with Home, so read it on mount rather than showing a
+  // local default that silently disagrees with the ring there.
+  useEffect(() => {
+    let alive = true;
+    getWaterTarget(DEFAULT_WATER_TARGET).then((g) => {
+      if (alive) setGoal(g);
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  /** Persist immediately so Home and this screen never drift apart. */
+  const changeGoal = async (ml: number) => {
+    const next = Math.round(ml);
+    setGoal(next);
+    try {
+      await setWaterTarget(next);
+    } catch {
+      toast('Could not save the target', 'error');
+    }
+  };
+
   const pct = waterProgress(today.waterMl, goal);
   const remaining = Math.max(0, goal - today.waterMl);
   const litres = (today.waterMl / 1000).toFixed(2);
@@ -55,8 +79,8 @@ export default function WaterScreen() {
     if (busy) return;
     setBusy(true);
     try {
+      // No toast: the ring and bottle fill are the confirmation.
       await addWater(ml);
-      toast(`+${ml} ml 💧`);
     } catch (e: any) {
       toast(e?.message ?? 'Could not save', 'error');
     } finally {
@@ -139,13 +163,13 @@ export default function WaterScreen() {
         <SectionTitle title="Daily target" icon="speedometer-outline" />
         <PickRow>
           {GOAL_CHOICES.map((g) => (
-            <PickButton key={g} label={`${(g / 1000).toFixed(g % 1000 ? 1 : 0)}L`} selected={goal === g} onPress={() => setGoal(g)} />
+            <PickButton key={g} label={`${(g / 1000).toFixed(g % 1000 ? 1 : 0)}L`} selected={goal === g} onPress={() => changeGoal(g)} />
           ))}
         </PickRow>
         <GhostButton
           title="Estimate from my weight"
           icon="scale-outline"
-          onPress={() => setGoal(waterTargetMl(70, true, false))}
+          onPress={() => changeGoal(waterTargetMl(70, true, false))}
         />
 
         <DisclaimerBanner text="Pale-yellow urine is a rough everyday sign you are drinking enough. Very clear urine plus constant drinking can mean too much. Medical fluid limits always override anything in this app." />

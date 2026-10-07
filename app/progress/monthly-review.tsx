@@ -3,7 +3,7 @@ import { ScrollView, View, Text, StyleSheet } from 'react-native';
 import {Card, H1, Body, Muted, BottomSpace, SectionTitle, EmptyState, TopSpace} from '../../src/components/ui';
 import { supabase } from '../../src/lib/supabase';
 import { BottomNav } from '../../src/components/BottomNav';
-import { Colors } from '../../src/theme';
+import { Colors, gridRow, cell } from '../../src/theme';
 
 function Stat({ value, label, color }: { value: string; label: string; color?: string }) {
   return (
@@ -66,17 +66,31 @@ export default function MonthlyReview() {
   if (s.wDelta != null && Math.abs(s.wDelta) < 0.2) stalled.push('Weight flat — review portions + steps');
   if (s.wDelta != null && Math.abs(s.wDelta) >= 0.2) improved.push(`Weight ${s.wDelta > 0 ? '+' : ''}${s.wDelta.toFixed(1)} kg vs 30 days ago`);
 
+  const STATS = [
+    { label: 'Workouts', value: String(s.sessions), color: Colors.primary },
+    { label: 'Yoga', value: String(s.yogas), color: '#2DD4BF' },
+    { label: 'Active days', value: String(s.activeDays), color: '#38BDF8' },
+    { label: 'Meals', value: String(s.meals), color: '#EAB308' },
+    { label: 'Water logs', value: String(s.water), color: '#38BDF8' },
+    {
+      label: 'kg / 30d',
+      value: s.wDelta == null ? '—' : `${s.wDelta > 0 ? '+' : ''}${s.wDelta.toFixed(1)}`,
+      color: '#F472B6',
+    },
+  ];
+
   return (
     <View style={{ flex: 1 }}><ScrollView style={{ flex: 1, backgroundColor: Colors.bg, padding: 16 }}>
       <H1>Monthly Review 📊</H1>
       <Muted>Last 30 days, computed from your logs.</Muted>
-      <View style={useStyles().grid}>
-        <Stat value={String(s.sessions)} label="Workouts" color={Colors.primary} />
-        <Stat value={String(s.yogas)} label="Yoga" color="#2DD4BF" />
-        <Stat value={String(s.activeDays)} label="Active days" color="#38BDF8" />
-        <Stat value={String(s.meals)} label="Meals" color="#EAB308" />
-        <Stat value={String(s.water)} label="Water logs" color="#38BDF8" />
-        <Stat value={s.wDelta == null ? '—' : `${s.wDelta > 0 ? '+' : ''}${s.wDelta.toFixed(1)}`} label="kg / 30d" color="#F472B6" />
+      <View style={[gridRow(), { marginVertical: 6 }]}>
+        {STATS.map((st) => (
+          // Wrapper carries the gutter so the stat boxes have real space
+          // between them instead of sitting flush against each other.
+          <View key={st.label} style={cell(3)}>
+            <Stat value={st.value} label={st.label} color={st.color} />
+          </View>
+        ))}
       </View>
       <SectionTitle title="What improved ✅" icon="trending-up-outline" />
       {improved.length === 0 ? <Card><Body>Nothing yet — your first wins will show here.</Body></Card> : null}
@@ -91,8 +105,9 @@ export default function MonthlyReview() {
 }
 
 const useStyles = () => StyleSheet.create({
-  grid: { flexDirection: 'row', flexWrap: 'wrap', marginVertical: 6 },
-  stat: { width: '31%', backgroundColor: Colors.card, borderRadius: 14, borderWidth: 1, borderColor: Colors.border, paddingVertical: 12, alignItems: 'center', margin: '1%' },
-  statVal: { fontWeight: '800', fontSize: 20 },
-  statLab: { color: Colors.muted, fontSize: 11, marginTop: 2 },
+  // No width/gutter: the grid wrapper owns the cell so the boxes have space
+  // between them and the row fills the screen width exactly.
+  stat: { backgroundColor: Colors.card, borderRadius: 14, borderWidth: 1, borderColor: Colors.border, paddingVertical: 12, paddingHorizontal: 4, alignItems: 'center', height: 68, justifyContent: 'center' },
+  statVal: { fontWeight: '800', fontSize: 18 },
+  statLab: { color: Colors.muted, fontSize: 10.5, marginTop: 2, textAlign: 'center' },
 });

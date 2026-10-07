@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { ScrollView, Alert, View, Text } from 'react-native';
-import { Card, H1, Body, Muted, PrimaryButton, BottomSpace, SectionTitle, EmptyState, Field, DataRow, IconButton } from '../../src/components/ui';
+import { Card, H1, Muted, PrimaryButton, BottomSpace, SectionTitle, EmptyState, Field, DataRow, IconButton } from '../../src/components/ui';
 import { supabase } from '../../src/lib/supabase';
 import { toast } from '../../src/components/Toast';
 import { BottomNav } from '../../src/components/BottomNav';
@@ -58,7 +58,6 @@ export default function Measurements() {
       return;
     }
     setVals({});
-    toast('Measurements saved ✓');
     load();
   };
 
@@ -69,8 +68,7 @@ export default function Measurements() {
         text: 'Delete', style: 'destructive', onPress: async () => {
           const { error } = await supabase.from('body_metrics').delete().eq('id', rowId);
           if (error) return toast(error.message, 'error');
-          toast('Entry deleted');
-          load();
+              load();
         },
       },
     ]);
@@ -97,7 +95,7 @@ export default function Measurements() {
 
       {latest && first && latest.id !== first.id ? (
         <Card accent={Colors.primary}>
-          <SectionTitle title="Change so far" icon="trending-up-outline" />
+          <SectionTitle title="Change so far" icon="trending-up-outline" tight />
           <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
             {FIELDS.map((f) => {
               const d = delta(f.key);

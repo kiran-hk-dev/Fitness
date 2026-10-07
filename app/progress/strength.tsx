@@ -59,7 +59,7 @@ export default function Strength() {
         <EmptyState title="No activity yet" hint="Finish a workout or yoga — your bars appear here." icon="bar-chart-outline" />
       )}
       <Card>
-        <SectionTitle title="Today" icon="today-outline" />
+        <SectionTitle title="Today" icon="today-outline" tight />
         {days.length ? <Body>💪 {days[6].workouts} workouts • 🧘 {days[6].yogas} yoga • ✅ {days[6].total} total</Body> : null}
       </Card>
       <BottomSpace />

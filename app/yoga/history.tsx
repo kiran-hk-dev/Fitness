@@ -56,7 +56,7 @@ export default function YogaHistory() {
           {rows.map((r) => (
             <Card key={r.id}>
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <Body>✓ {r.item_name}</Body>
+                <Body numberOfLines={1}>✓ {r.item_name}</Body>
                 <View style={{ flex: 1 }} />
                 <IconButton icon="close" onPress={() => removeCheck(r.id)} />
               </View>

@@ -17,9 +17,6 @@ const LINKS = [
   { title: 'Share my day', icon: 'share-social-outline', route: '/progress/share' },
 ] as const;
 
-/** 3-up grid: fixed percentage so items always sit on one aligned row. */
-const GRID_TILE = cell(3);
-
 export default function ProgressTab() {
   const router = useRouter();
   const { today, unlocked } = useActivity();
@@ -69,13 +66,17 @@ export default function ProgressTab() {
 
       <PoseSlideshow poseIds={['child', 'bridge', 'catcow', 'boat']} height={150} />
 
-      <SectionTitle title="Track" icon="stats-chart-outline" />
-      <View style={useStyles().grid}>
+      <SectionTitle title="Track" icon="stats-chart-outline" hint="Charts and photos" />
+      {/* Wrapper carries the gutter; the tile itself must not, or its borders
+          end up flush with its neighbours. */}
+      <View style={gridRow()}>
         {LINKS.map((l) => (
-          <Pressable key={l.title} style={useStyles().tile} onPress={() => router.push(l.route as any)}>
-            <AppIcon name={l.icon as any} size={24} color={Colors.primary} />
-            <Text style={useStyles().tileText}>{l.title}</Text>
-          </Pressable>
+          <View key={l.title} style={cell(3)}>
+            <Pressable style={useStyles().tile} onPress={() => router.push(l.route as any)}>
+              <AppIcon name={l.icon as any} size={22} color={Colors.primary} />
+              <Text style={useStyles().tileText} numberOfLines={2}>{l.title}</Text>
+            </Pressable>
+          </View>
         ))}
       </View>
 
@@ -93,8 +94,8 @@ const useStyles = () => StyleSheet.create({
   badgeRow: { flexDirection: 'row', marginTop: 12 },
   chip: { alignItems: 'center', paddingHorizontal: 2 },
   chipInner: { width: '100%', aspectRatio: 1, maxWidth: 38, borderRadius: 19, borderWidth: 1.5, borderColor: Colors.border, alignItems: 'center', justifyContent: 'center' },
-  today: { color: Colors.muted, fontSize: 12, fontWeight: '700', marginTop: 12 },
-  grid: { ...gridRow(), marginVertical: 8 },
-  tile: { backgroundColor: Colors.card, borderRadius: 14, borderWidth: 1, borderColor: Colors.border, paddingVertical: 14, alignItems: 'center', ...GRID_TILE },
-  tileText: { color: Colors.text, fontSize: 11, fontWeight: '700', marginTop: 6, textAlign: 'center' },
+today: { color: Colors.muted, fontSize: 12, fontWeight: '700', marginTop: 12 },
+  // No width/padding here: the grid wrapper owns the gutter.
+  tile: { backgroundColor: Colors.card, borderRadius: 14, borderWidth: 1, borderColor: Colors.border, paddingVertical: 13, paddingHorizontal: 4, alignItems: 'center', justifyContent: 'center', height: 84 },
+  tileText: { color: Colors.text, fontSize: 11, fontWeight: '700', marginTop: 6, textAlign: 'center', lineHeight: 14 },
 });

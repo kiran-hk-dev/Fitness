@@ -20,7 +20,6 @@ import {
 } from '../../src/lib/meals';
 import { buildTargets } from '../../src/utils/nutrition';
 import { getCustomTargets } from '../../src/lib/targets';
-import { toast } from '../../src/components/Toast';
 import { Colors, gridRow, cell } from '../../src/theme';
 import { AppIcon } from '../../src/components/AppIcon';
 
@@ -110,9 +109,9 @@ export default function Logger() {
   const changeQty = async (entry: LoggedEntry, dir: 1 | -1) => {
     const next = stepQty(entry.qty, dir);
     if (next < 0.3) {
+      // No toast: the row vanishing and the ring dropping are the feedback.
       await removeEntry(entry);
       setEntries((prev) => prev.filter((e) => e.id !== entry.id));
-      toast(`${entry.name} removed`);
       return;
     }
     // optimistic
@@ -130,7 +129,6 @@ export default function Logger() {
   const drop = async (entry: LoggedEntry) => {
     setEntries((prev) => prev.filter((e) => e.id !== entry.id));
     await removeEntry(entry);
-    toast(`${entry.name} removed — tap ↺ undo is not stored, re-add it if needed`);
   };
 
   const favourites = useMemo(() => rankByFrequency(FOODS, freq, 8), [freq]);
@@ -196,11 +194,14 @@ export default function Logger() {
               const active = slot === m.id;
               const count = entries.filter((e) => e.slot === m.id).length;
               return (
-                <BouncyPress key={m.id} onPress={() => setSlot(m.id)} scaleTo={0.92} accessibilityLabel={`Log as ${m.label}`} style={{ flex: 1 }}>
+                <BouncyPress key={m.id} onPress={() => setSlot(m.id)} scaleTo={0.94} accessibilityLabel={`Log as ${m.label}`} style={{ flex: 1 }}>
+                  {/* Emoji ABOVE the full label. Side-by-side only leaves ~40px
+                      for text on a 360dp phone, which is not enough for
+                      "Breakfast" — stacked gives it the whole cell. */}
                   <View style={[s.slot, active && { borderColor: Colors.primary, backgroundColor: Colors.primarySoft }]}>
-                    <Text style={{ fontSize: 17 }}>{m.emoji}</Text>
+                    <Text style={s.slotEmoji}>{m.emoji}</Text>
                     <Text style={[s.slotLab, active && { color: Colors.primary }]} numberOfLines={1}>
-                      {m.short}
+                      {m.label}
                     </Text>
                     {count > 0 ? (
                       <View style={[s.slotCount, { backgroundColor: active ? Colors.primary : Colors.raised }]}>
@@ -253,7 +254,6 @@ export default function Logger() {
                 <View style={s.groupHead}>
                   <Text style={{ fontSize: 17 }}>{g.emoji}</Text>
                   <Text style={s.groupName}>{g.label}</Text>
-                  <View style={{ flex: 1 }} />
                   <Text style={s.groupKcal}>{g.kcal} kcal</Text>
                 </View>
                 {g.items.map((e) => (
@@ -400,11 +400,19 @@ const s = StyleSheet.create({
   macroBullet: { width: 8, height: 8, borderRadius: 4, marginRight: 5 },
   macroVal: { color: Colors.text, fontWeight: '800', fontSize: 13 },
   left: { color: Colors.muted, fontSize: 12, fontWeight: '700' },
-  slotRow: gridRow(),
-  slot: { flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 14, borderWidth: 2, borderColor: Colors.border, marginHorizontal: 4, backgroundColor: Colors.card },
-  slotLab: { color: Colors.muted, fontSize: 11, fontWeight: '800', marginTop: 3 },
-  slotCount: { position: 'absolute', top: -6, right: -2, minWidth: 20, height: 20, borderRadius: 10, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 5 },
-  slotCountTxt: { fontSize: 11, fontWeight: '900' },
+// Meal tabs. Stacked so the full label fits: at 360dp each cell gives ~73px
+  // and "Breakfast" needs ~55px at 10.5 — side-by-side would only leave 40px.
+slotRow: { flexDirection: 'row', marginHorizontal: -6, marginTop: 4 },
+  slot: {
+    flex: 1, alignItems: 'center', justifyContent: 'center',
+    paddingVertical: 8, paddingHorizontal: 4, borderRadius: 12, borderWidth: 1.5,
+    borderColor: Colors.border, marginHorizontal: 6, backgroundColor: Colors.card,
+    overflow: 'hidden', minHeight: 56,
+  },
+  slotEmoji: { fontSize: 16 },
+  slotLab: { color: Colors.muted, fontSize: 10.5, fontWeight: '800', marginTop: 3 },
+  slotCount: { position: 'absolute', top: 3, right: 3, minWidth: 16, height: 16, borderRadius: 8, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 3 },
+  slotCountTxt: { fontSize: 10, fontWeight: '900' },
   preset: { flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.card, borderRadius: 16, borderWidth: 1.5, padding: 11, marginVertical: 4 },
   presetIcon: { width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center', marginRight: 11 },
   presetName: { color: Colors.text, fontWeight: '900', fontSize: 14 },
@@ -412,7 +420,7 @@ const s = StyleSheet.create({
   plus: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
   group: { paddingHorizontal: 12, paddingVertical: 12 },
   groupHead: { flexDirection: 'row', alignItems: 'center', marginBottom: 6 },
-  groupName: { color: Colors.text, fontWeight: '900', fontSize: 15, marginLeft: 8 },
+  groupName: { color: Colors.text, fontWeight: '900', fontSize: 15, marginLeft: 8, flex: 1 },
   groupKcal: { color: Colors.primary, fontWeight: '900', fontSize: 14 },
   entry: { flexDirection: 'row', alignItems: 'center', paddingVertical: 7, borderTopWidth: 1, borderTopColor: Colors.border },
   entryName: { color: Colors.text, fontWeight: '800', fontSize: 14 },
@@ -426,8 +434,10 @@ const s = StyleSheet.create({
   catHead: { flexDirection: 'row', alignItems: 'center', marginTop: 14, marginBottom: 6 },
   catName: { color: Colors.text, fontWeight: '800', fontSize: 13, textTransform: 'capitalize', marginLeft: 6 },
   foodGrid: gridRow(),
-  tile: { backgroundColor: Colors.card, borderRadius: 16, borderWidth: 1.5, borderColor: Colors.border, paddingVertical: 10, paddingHorizontal: 4, alignItems: 'center', height: 138, justifyContent: 'space-between' },
-  tileName: { color: Colors.text, fontSize: 10, fontWeight: '800', textAlign: 'center', marginTop: 5, paddingHorizontal: 2, height: 26 },
+  tile: { backgroundColor: Colors.card, borderRadius: 16, borderWidth: 1.5, borderColor: Colors.border, paddingVertical: 10, paddingHorizontal: 4, alignItems: 'center', height: 140, justifyContent: 'space-between' },
+  // Two lines of 10px text ≈ 26px; 30 gives headroom for larger font scales so
+  // a long food name can never clip against the kcal row.
+  tileName: { color: Colors.text, fontSize: 10, fontWeight: '800', textAlign: 'center', marginTop: 5, paddingHorizontal: 2, height: 30 },
   tileMetaBox: { alignItems: 'center' },
   tileKcal: { color: Colors.primary, fontSize: 11, fontWeight: '900', marginTop: 2 },
   tileMacro: { color: Colors.muted, fontSize: 9, fontWeight: '700', marginTop: 1 },

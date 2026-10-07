@@ -10,7 +10,7 @@ import { EXERCISES } from '../../src/data/exercises';
 import { buildTargets } from '../../src/utils/nutrition';
 import { SPOT_REDUCTION_NOTE } from '../../src/utils/progression';
 import { getDailySummary, pruneOldLogs, type DailySummary } from '../../src/lib/tracking';
-import { getCustomTargets, setCustomTargets, type CustomTargets } from '../../src/lib/targets';
+import { getCustomTargets, setCustomTargets, clearCustomTargets, getWaterTarget, type CustomTargets } from '../../src/lib/targets';
 import { useActivity } from '../../src/hooks/useActivity';
 import { RingProgress, CountUp } from '../../src/components/ActivityVisuals';
 import { BouncyPress, FadeIn } from '../../src/components/Motion';
@@ -37,16 +37,22 @@ export default function Home() {
   const t = buildTargets({ weightKg: 70, heightCm: 170, activity: 'moderate', goal: 'fat_loss' });
   const [summary, setSummary] = useState<DailySummary | null>(null);
   const [custom, setCustom] = useState<CustomTargets | null>(null);
+  // Read separately: getCustomTargets() returns null unless calories is set,
+  // so a water-only target would otherwise be invisible here and get
+  // overwritten the next time someone saves from this screen.
+  const [waterTarget, setWaterTargetState] = useState(DEFAULT_WATER_TARGET);
   const [editing, setEditing] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
   const [fCal, setFCal] = useState('');
   const [fPro, setFPro] = useState('');
+  const [fWat, setFWat] = useState('');
 
   const move = EXERCISES[Math.floor(Date.now() / 86400000) % EXERCISES.length];
 
   const load = useCallback(async () => {
     try { setSummary(await getDailySummary()); } catch { setSummary(null); }
     try { setCustom(await getCustomTargets()); } catch {}
+    setWaterTargetState(await getWaterTarget(DEFAULT_WATER_TARGET));
     await refresh();
     pruneOldLogs().catch(() => {});
   }, [refresh]);
@@ -55,7 +61,9 @@ export default function Home() {
   const cal = custom?.calories ?? t.calories;
   const pro = custom?.protein_g ?? t.protein_g;
   const stepGoal = DEFAULT_STEP_TARGET;
-  const waterGoal = DEFAULT_WATER_TARGET;
+  // Honour the saved water target. This was hardcoded to the default, so the
+  // ring and percentage ignored anything the user changed.
+  const waterGoal = waterTarget;
   const stepPct = goalProgress(today.steps, stepGoal);
   const waterPct = waterProgress(today.waterMl, waterGoal);
   const next = nextMilestone(today.steps);
@@ -64,25 +72,30 @@ export default function Home() {
   const openEditor = () => {
     setFCal(String(cal));
     setFPro(String(pro));
+    setFWat(String(waterGoal));
     setEditing((v) => !v);
   };
 
   const saveTargets = async () => {
-    const c = Number(fCal), p = Number(fPro);
+    const c = Number(fCal), p = Number(fPro), w = Number(fWat);
     if (!(c > 800 && c < 8000)) return toast('Calories must be 800–8000', 'error');
     if (!(p >= 0 && p < 500)) return toast('Protein must be 0–500 g', 'error');
-    await setCustomTargets({ calories: Math.round(c), protein_g: Math.round(p), water_ml: waterGoal });
-    setCustom({ calories: Math.round(c), protein_g: Math.round(p), water_ml: waterGoal });
+    if (!(w >= 250 && w <= 10000)) return toast('Water must be 250–10000 ml', 'error');
+    const next2 = { calories: Math.round(c), protein_g: Math.round(p), water_ml: Math.round(w) };
+    await setCustomTargets(next2);
+    setCustom(next2);
+    setWaterTargetState(next2.water_ml);
     setEditing(false);
     toast('Targets saved ✓');
   };
 
-  const quick = async (fn: () => Promise<unknown>, okMsg: string) => {
+  /** Quick-log a value. The ring animating is the confirmation, so no toast on
+   *  success — errors still surface because nothing else does. */
+  const quick = async (fn: () => Promise<unknown>) => {
     if (busy) return;
     setBusy(true);
     try {
       await fn();
-      toast(okMsg);
     } catch (e: any) {
       toast(e?.message ?? 'Could not save', 'error');
     } finally {
@@ -172,7 +185,7 @@ export default function Home() {
           {[500, 1000, 2000, 5000].map((n) => (
             <BouncyPress
               key={n}
-              onPress={() => quick(() => addSteps(n), `+${n.toLocaleString()} steps`)}
+              onPress={() => quick(() => addSteps(n))}
               disabled={busy}
               scaleTo={0.9}
               accessibilityLabel={`Add ${n} steps`}
@@ -187,7 +200,7 @@ export default function Home() {
           {[200, 300, 500].map((ml) => (
             <BouncyPress
               key={ml}
-              onPress={() => quick(() => addWater(ml), `+${ml} ml 💧`)}
+              onPress={() => quick(() => addWater(ml))}
               disabled={busy}
               scaleTo={0.9}
               accessibilityLabel={`Add ${ml} millilitres of water`}
@@ -200,35 +213,31 @@ export default function Home() {
         </View>
 
         {/* ---------- four big buttons ---------- */}
-        <SectionTitle title="What are you doing?" icon="apps-outline" />
+        <SectionTitle title="What next?" icon="apps-outline" hint="Pick a lane and go" />
         <ButtonGrid>
           <BigActionButton
-            style={s.half}
             title="Train"
-            hint="Strength · Yoga · Cardio · Mobility"
+            hint="Strength, yoga, cardio"
             icon="layers-outline"
             onPress={() => router.push('/train' as any)}
             badge="ALL"
           />
           <BigActionButton
-            style={s.half}
             title="Log Food"
-            hint="Meals, calories and macros"
+            hint="Meals and macros"
             icon="restaurant-outline"
             color={Colors.accent}
             onPress={() => router.push('/nutrition/logger' as any)}
           />
           <BigActionButton
-            style={s.half}
             title="Steps"
-            hint="Counter and badge map"
+            hint="Counter and badges"
             icon="footsteps-outline"
             onPress={() => router.push('/activity/steps' as any)}
           />
           <BigActionButton
-            style={s.half}
             title="Run"
-            hint="Timer, pace and calories"
+            hint="Timer, pace, kcal"
             icon="run-outline"
             color="#F472B6"
             onPress={() => router.push('/activity/run' as any)}
@@ -254,7 +263,7 @@ export default function Home() {
           <View style={s.nutHead}>
             <View style={{ flex: 1 }}>
               <Text style={s.nutTitle}>{cal.toLocaleString()} kcal</Text>
-              <Text style={s.nutSub}>{pro} g protein target</Text>
+              <Text style={s.nutSub}>{pro} g protein · {waterGoal.toLocaleString()} ml water</Text>
             </View>
             <SmallEdit onPress={openEditor} />
           </View>
@@ -262,13 +271,24 @@ export default function Home() {
             <>
               <Field label="Calories target (kcal)" value={fCal} onChangeText={setFCal} placeholder="e.g. 2200" keyboardType="numeric" />
               <Field label="Protein target (g)" value={fPro} onChangeText={setFPro} placeholder="e.g. 120" keyboardType="numeric" />
+              <Field label="Water target (ml)" value={fWat} onChangeText={setFWat} placeholder="e.g. 2500" keyboardType="numeric" hint="The water ring above uses this." />
               <PrimaryButton title="Save targets" icon="checkmark" onPress={saveTargets} />
               <GhostButton title="Cancel" onPress={() => setEditing(false)} />
             </>
           ) : (
-            <View style={{ flexDirection: 'row', marginTop: 6 }}>
+            <View style={[s.nutChips]}>
               <Chip label={custom ? 'Your targets' : 'Estimated targets'} icon="speedometer-outline" color={custom ? Colors.primary : Colors.muted} />
-              {custom ? <Chip label="Reset" icon="refresh-outline" color={Colors.muted} /> : null}
+              {custom ? (
+                <GhostButton
+                  title="Back to estimates"
+                  icon="refresh-outline"
+                  onPress={async () => {
+                    await clearCustomTargets();
+                    setCustom(null);
+                    setWaterTargetState(DEFAULT_WATER_TARGET);
+                  }}
+                />
+              ) : null}
             </View>
           )}
         </Card>
@@ -375,6 +395,7 @@ const s = StyleSheet.create({
   nutHead: { flexDirection: 'row', alignItems: 'center' },
   nutTitle: { color: Colors.text, fontWeight: '900', fontSize: 24 },
   nutSub: { color: Colors.muted, fontSize: 13, fontWeight: '600' },
+  nutChips: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', marginTop: 4 },
   editBtn: { flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.primarySoft, borderRadius: 999, paddingVertical: 7, paddingHorizontal: 12 },
   editText: { color: Colors.primary, fontWeight: '800', fontSize: 12, marginLeft: 4 },
 });

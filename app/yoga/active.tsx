@@ -193,7 +193,7 @@ const s = StyleSheet.create({
   poseCard: { paddingHorizontal: 12, paddingBottom: 14 },
   poseBody: { paddingTop: 12 },
   poseHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  stepN: { color: MuscleColor.mobility, fontWeight: '900', fontSize: 11, letterSpacing: 0.5 },
+  stepN: { color: MuscleColor.mobility, fontWeight: '900', fontSize: 11, letterSpacing: 0.5, flex: 1, marginRight: 8 },
   countdown: { color: Colors.primary, fontWeight: '900', fontSize: 13 },
   countdownIdle: { color: Colors.muted, fontWeight: '700', fontSize: 11 },
   poseName: { color: Colors.text, fontWeight: '900', fontSize: 17, marginTop: 3 },

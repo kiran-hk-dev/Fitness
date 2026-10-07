@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
-import { ScrollView, TextInput, StyleSheet, Alert, View } from 'react-native';
+import { ScrollView, StyleSheet, Alert, View, Text } from 'react-native';
 import {Card, H1, Body, Muted, PrimaryButton, SmallButton, SectionTitle, EmptyState, BottomSpace, TopSpace, Field} from '../../src/components/ui';
 import { toast } from '../../src/components/Toast';
 import { MEAL_TEMPLATES, GROCERY_LIST } from '../../src/data/mealTemplates';
 import { saveDietPlan, getDietPlans, deleteDietPlan, type DietPlan } from '../../src/lib/diet';
 import { FoodPhoto } from '../../src/components/FoodArt';
 import { BottomNav } from '../../src/components/BottomNav';
-import { Colors } from '../../src/theme';
+import { Colors, gridRow, cell } from '../../src/theme';
 
 const WEEK_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
@@ -33,6 +33,7 @@ const MEAL_PHOTOS: Record<string, { id: string; cat: string; label: string }[]> 
 };
 
 export default function Plan() {
+  const s = useStyles();
   const [planName, setPlanName] = useState('My weekly plan');
   const [saved, setSaved] = useState<DietPlan[]>([]);
   const [busy, setBusy] = useState(false);
@@ -55,7 +56,6 @@ export default function Plan() {
         snack: tpl.meals.snack, dinner: tpl.meals.dinner,
       }));
       await saveDietPlan(planName.trim(), tpl.diet, days);
-      toast(`Saved ✓ — "${planName.trim()}" stored in Supabase`);
       load();
     } catch (e: any) {
       toast(e?.message ?? 'Save failed — log in first', 'error');
@@ -91,20 +91,37 @@ export default function Plan() {
       {MEAL_TEMPLATES.map((m) => (
         <Card key={m.id}>
           <Body>{m.name}</Body>
-          <View style={{ flexDirection: 'row', marginVertical: 8 }}>
+          {/* Meal slots: fixed-width cells on a shared gutter so the four
+              columns line up with each other and with the card edges. */}
+          <View style={s.slots}>
             {(MEAL_PHOTOS[m.id] ?? []).map((ph) => (
-              <View key={ph.label} style={{ flex: 1, alignItems: 'center' }}>
-                <FoodPhoto foodId={ph.id} category={ph.cat} size={52} />
-                <Muted>{ph.label}</Muted>
+              <View key={ph.label} style={s.slotCell}>
+                <FoodPhoto foodId={ph.id} category={ph.cat} size={44} />
+                <Text style={s.slotLabel} numberOfLines={1}>
+                  {ph.label}
+                </Text>
               </View>
             ))}
           </View>
-          <Muted>☀ {m.meals.breakfast}</Muted>
-          <Muted>☁ {m.meals.lunch}</Muted>
-          <Muted>🍎 {m.meals.snack}</Muted>
-          <Muted>🌙 {m.meals.dinner}</Muted>
-          <Body>Swaps: {m.swaps.join(' • ')}</Body>
-          <PrimaryButton title="💾 Save 7-day plan" loading={busy} icon="cloud-upload-outline" onPress={() => saveTemplate(m.id)} />
+          <View style={s.divider} />
+          <Text style={s.line}>
+            <Text style={s.lineEmoji}>🌅</Text>
+            {m.meals.breakfast}
+          </Text>
+          <Text style={s.line}>
+            <Text style={s.lineEmoji}>☀️</Text>
+            {m.meals.lunch}
+          </Text>
+          <Text style={s.line}>
+            <Text style={s.lineEmoji}>🍎</Text>
+            {m.meals.snack}
+          </Text>
+          <Text style={s.line}>
+            <Text style={s.lineEmoji}>🌙</Text>
+            {m.meals.dinner}
+          </Text>
+          <Muted style={{ marginTop: 8 }}>Swaps: {m.swaps.join(' • ')}</Muted>
+          <PrimaryButton title="Save 7-day plan" loading={busy} icon="cloud-upload-outline" onPress={() => saveTemplate(m.id)} />
         </Card>
       ))}
       <SectionTitle title="Grocery list" icon="cart-outline" />
@@ -115,5 +132,10 @@ export default function Plan() {
 }
 
 const useStyles = () => StyleSheet.create({
-  input: { borderWidth: 1, borderColor: Colors.border, borderRadius: 10, padding: 12, color: Colors.text, marginVertical: 6 },
+  slots: { ...gridRow(), marginTop: 10, marginBottom: 4 },
+  slotCell: { ...cell(4), alignItems: 'center' },
+  slotLabel: { color: Colors.muted, fontSize: 10, fontWeight: '800', marginTop: 5, textAlign: 'center' },
+  divider: { height: 1, backgroundColor: Colors.border, marginVertical: 10 },
+  line: { color: Colors.text, fontSize: 13, lineHeight: 19, marginBottom: 5 },
+  lineEmoji: { fontSize: 13, marginRight: 6 },
 });

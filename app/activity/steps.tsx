@@ -34,8 +34,8 @@ export default function StepsScreen() {
     if (busy) return;
     setBusy(true);
     try {
+      // No toast: the big ring sweeping up is the confirmation.
       await addSteps(n);
-      toast(`+${Math.round(n).toLocaleString()} steps logged`);
     } catch (e: any) {
       toast(e?.message ?? 'Could not save steps', 'error');
     } finally {
@@ -178,13 +178,13 @@ const s = StyleSheet.create({
   back: { flexDirection: 'row', alignItems: 'center', marginBottom: 4 },
   backText: { color: Colors.text, fontWeight: '800', fontSize: 15, marginLeft: 2 },
   bigSteps: { color: Colors.text, fontWeight: '900', fontSize: 46 },
-  bigLabel: { color: Colors.muted, fontSize: 13, fontWeight: '800', letterSpacing: 1.2, textTransform: 'uppercase', marginTop: -4 },
+  bigLabel: { color: Colors.muted, fontSize: 12, fontWeight: '800', letterSpacing: 1.1, textTransform: 'uppercase', marginTop: 1 },
   bigGoal: { color: Colors.faint, fontSize: 12, fontWeight: '700', marginTop: 2 },
   msg: { color: Colors.text, fontWeight: '700', fontSize: 14, marginTop: 16, textAlign: 'center', paddingHorizontal: 12 },
   donePill: { flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.primarySoft, borderRadius: 999, paddingVertical: 7, paddingHorizontal: 14, marginTop: 10 },
   doneText: { color: Colors.primary, fontWeight: '800', fontSize: 13, marginLeft: 6 },
   tierHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 },
-  tierTitle: { color: Colors.text, fontWeight: '800', fontSize: 16 },
+  tierTitle: { color: Colors.text, fontWeight: '800', fontSize: 15, flex: 1, marginRight: 8 },
   tierNum: { color: Colors.primary, fontWeight: '800', fontSize: 13 },
   uuickRow: { flexDirection: 'row', marginHorizontal: -4 },
   uuick: { flex: 1, backgroundColor: Colors.primary, borderRadius: 16, paddingVertical: 16, alignItems: 'center', marginHorizontal: 4, elevation: 3 },

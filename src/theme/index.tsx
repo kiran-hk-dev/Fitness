@@ -146,6 +146,17 @@ export const MuscleColor: Record<string, string> = {
 export const Spacing = { xs: 4, sm: 8, md: 16, lg: 24, xl: 32 };
 export const Radius = { sm: 10, md: 16, lg: 24, full: 999 };
 
+/**
+ * One screen padding, used everywhere. It was previously re-typed as
+ * `padding: 16` in ~40 files, which is exactly how screens drift out of
+ * alignment with each other.
+ */
+export const SCREEN_PAD = 16;
+
+/** Standard props for a full-screen scrolling page. */
+export const screenContent = { padding: SCREEN_PAD };
+export const screenScroll = { flex: 1, backgroundColor: THEMES[DEFAULT_THEME].bg, padding: SCREEN_PAD };
+
 export const FontSize = { xs: 12, sm: 13, md: 15, lg: 18, xl: 22, xxl: 28 };
 
 /**
@@ -159,9 +170,16 @@ export const FontSize = { xs: 12, sm: 13, md: 15, lg: 18, xl: 22, xxl: 28 };
  * `paddingHorizontal: GUTTER`. Negative parent + positive child cancels out,
  * so the outer edges stay flush with the cards above and below.
  */
-export const GUTTER = 4;
+export const GUTTER = 6;
 
-/** Cell size for a fixed-column grid. Use with a `-GUTTER` parent. */
+/**
+ * Cell size for a fixed-column grid.
+ *
+ * IMPORTANT: this goes on a WRAPPER around the card, never on the card
+ * itself. Padding on a bordered card sits *inside* its own border, so two
+ * 50% cards end up with their borders flush together and no visible gap.
+ * Wrapping puts the space outside the border where it belongs.
+ */
 export function cell(columns: number, gutter = GUTTER) {
   return {
     width: `${100 / columns}%` as const,

@@ -57,7 +57,7 @@ export default function Plans() {
                 );
               })}
               <View style={useStyles().more}>
-                <Text style={useStyles().moreText}>+{p.exercises.length - 8} more inside →</Text>
+                <Text style={useStyles().moreText} numberOfLines={2}>+{p.exercises.length - 8} more inside →</Text>
               </View>
             </View>
             <View style={{ padding: 12, paddingTop: 0 }}>
@@ -101,7 +101,7 @@ const useStyles = () => StyleSheet.create({
   thumb: { width: '23%', margin: '1%' },
   thumbName: { color: Colors.muted, fontSize: 9, marginTop: 3, textAlign: 'center' },
   more: { width: '23%', margin: '1%', borderRadius: 10, borderWidth: 1, borderColor: Colors.border, alignItems: 'center', justifyContent: 'center', minHeight: 80 },
-  moreText: { color: Colors.muted, fontSize: 10, textAlign: 'center', fontWeight: '700' },
+  moreText: { color: Colors.muted, fontSize: 10, textAlign: 'center', fontWeight: '700', paddingHorizontal: 2 },
   dots: { flexDirection: 'row', justifyContent: 'center', marginVertical: 6 },
   dot: { height: 8, borderRadius: 4, marginHorizontal: 3 },
 });

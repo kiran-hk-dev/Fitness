@@ -17,12 +17,18 @@ import type { Food } from '../types/app';
 
 export type MealSlot = 'breakfast' | 'lunch' | 'dinner' | 'snack';
 
-export const MEAL_SLOTS: { id: MealSlot; label: string; short: string; emoji: string }[] = [
-  { id: 'breakfast', label: 'Breakfast', short: 'Bfst', emoji: '🌅' },
-  { id: 'lunch', label: 'Lunch', short: 'Lunch', emoji: '☀️' },
-  { id: 'dinner', label: 'Dinner', short: 'Dinner', emoji: '🌙' },
-  { id: 'snack', label: 'Snack', short: 'Snack', emoji: '🍎' },
+export const MEAL_SLOTS: { id: MealSlot; label: string; emoji: string }[] = [
+  { id: 'breakfast', label: 'Breakfast', emoji: '🌅' },
+  { id: 'lunch', label: 'Lunch', emoji: '☀️' },
+  { id: 'dinner', label: 'Dinner', emoji: '🌙' },
+  { id: 'snack', label: 'Snack', emoji: '🍎' },
 ];
+
+/** Longest label — the tab font has to fit this, so it sets the size budget. */
+export const LONGEST_SLOT_LABEL = MEAL_SLOTS.reduce(
+  (a, b) => (b.label.length > a.length ? b.label : a),
+  '',
+);
 
 /** The slot that matches the current clock. */
 export function slotForNow(d = new Date()): MealSlot {
@@ -33,8 +39,8 @@ export function slotForNow(d = new Date()): MealSlot {
   return 'snack';
 }
 
-export function slotMeta(slot: string): { label: string; short: string; emoji: string } {
-  return MEAL_SLOTS.find((s) => s.id === slot) ?? { label: slot, short: slot, emoji: '🍽️' };
+export function slotMeta(slot: string): { label: string; emoji: string } {
+  return MEAL_SLOTS.find((s) => s.id === slot) ?? { label: slot, emoji: '🍽️' };
 }
 
 // ------------------------------------------------------------------ types ---

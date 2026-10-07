@@ -171,7 +171,12 @@ export function Celebration({ milestone, steps, onClose, nextLabel }: Celebratio
         <Confetti count={gold ? 40 : 24} />
         <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
 
-        <Animated.View style={[styles.card, { opacity: text, borderColor: gold ? '#FFC93C' : Colors.primary }]}>
+        <Animated.View
+          style={[
+            styles.card,
+            { opacity: text, borderColor: gold ? '#FFC93C' : Colors.primary },
+          ]}
+        >
           <Text style={[styles.kicker, { color: gold ? '#FFC93C' : Colors.primary }]}>
             {gold ? '★ ACHIEVEMENT UNLOCKED ★' : 'ACHIEVEMENT UNLOCKED'}
           </Text>
@@ -180,7 +185,18 @@ export function Celebration({ milestone, steps, onClose, nextLabel }: Celebratio
 
           <MedalRing m={milestone} steps={steps} />
 
-          <Animated.View style={{ opacity: text, transform: [{ translateY: text.interpolate({ inputRange: [0, 1], outputRange: [14, 0] }) }] }}>
+          {/* Every Animated.View here needs an explicit width: the child's
+              width:'100%' resolves against the wrapper, and without one the
+              button silently overflows the card. */}
+          <Animated.View
+            style={[
+              styles.full,
+              {
+                opacity: text,
+                transform: [{ translateY: text.interpolate({ inputRange: [0, 1], outputRange: [14, 0] }) }],
+              },
+            ]}
+          >
             <View style={styles.prize}>
               <AppIcon name="trophy-outline" size={18} color={Colors.primary} />
               <Text style={styles.prizeText}>
@@ -191,18 +207,31 @@ export function Celebration({ milestone, steps, onClose, nextLabel }: Celebratio
             </View>
           </Animated.View>
 
-          <Animated.View style={{ opacity: btn, transform: [{ translateY: btn.interpolate({ inputRange: [0, 1], outputRange: [18, 0] }) }] }}>
+          <Animated.View
+            style={[
+              styles.full,
+              {
+                opacity: btn,
+                transform: [{ translateY: btn.interpolate({ inputRange: [0, 1], outputRange: [18, 0] }) }],
+              },
+            ]}
+          >
             <Pressable
               onPress={onClose}
               style={({ pressed }) => [
                 styles.cta,
                 { backgroundColor: gold ? '#FFC93C' : Colors.primary },
-                pressed && { opacity: 0.85, transform: [{ scale: 0.97 }] },
+                pressed && { opacity: 0.85 },
               ]}
               accessibilityRole="button"
             >
-              <AppIcon name="arrow-forward" size={20} color={gold ? '#1A1200' : Colors.onPrimary} />
-              <Text style={[styles.ctaText, { color: gold ? '#1A1200' : Colors.onPrimary }]}>Keep going</Text>
+              <AppIcon name="arrow-forward" size={19} color={gold ? '#1A1200' : Colors.onPrimary} />
+              <Text
+                style={[styles.ctaText, { color: gold ? '#1A1200' : Colors.onPrimary }]}
+                numberOfLines={1}
+              >
+                Keep going
+              </Text>
             </Pressable>
           </Animated.View>
         </Animated.View>
@@ -212,22 +241,25 @@ export function Celebration({ milestone, steps, onClose, nextLabel }: Celebratio
 }
 
 const styles = StyleSheet.create({
-  backdrop: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 22 },
+  backdrop: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 20 },
   card: {
     width: '100%',
-    maxWidth: 400,
-    borderRadius: 26,
+    maxWidth: 380,
+    alignSelf: 'center',
+    borderRadius: 24,
     borderWidth: 2,
-    paddingVertical: 22,
-    paddingHorizontal: 18,
+    paddingVertical: 20,
+    paddingHorizontal: 16,
     alignItems: 'center',
     backgroundColor: Colors.card,
     elevation: 12,
   },
-  kicker: { fontSize: 11, fontWeight: '900', letterSpacing: 1.6 },
-  title: { color: Colors.text, fontSize: 30, fontWeight: '900', marginTop: 6, textAlign: 'center' },
-  sub: { color: Colors.muted, fontSize: 14, fontWeight: '700', marginTop: 2 },
-  medalSteps: { color: Colors.text, fontSize: FontSize.xxl, fontWeight: '900' },
+  /** Explicit full-width wrapper for animated children. */
+  full: { width: '100%', alignSelf: 'stretch' },
+  kicker: { fontSize: 11, fontWeight: '900', letterSpacing: 1.4, textAlign: 'center' },
+  title: { color: Colors.text, fontSize: 26, fontWeight: '900', marginTop: 6, textAlign: 'center' },
+  sub: { color: Colors.muted, fontSize: 13, fontWeight: '700', marginTop: 2, textAlign: 'center' },
+  medalSteps: { color: Colors.text, fontSize: FontSize.xl, fontWeight: '900' },
   medalGoal: { color: Colors.muted, fontSize: 12, fontWeight: '700' },
   prize: {
     flexDirection: 'row',
@@ -243,9 +275,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 16,
-    paddingVertical: 15,
-    marginTop: 16,
+    borderRadius: 14,
+    paddingVertical: 14,
+    marginTop: 14,
     width: '100%',
   },
   ctaText: { fontSize: 16, fontWeight: '900', marginLeft: 8 },

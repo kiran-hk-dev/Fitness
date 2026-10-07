@@ -24,23 +24,44 @@ export function Card({ children, style, accent }: { children: React.ReactNode; s
   );
 }
 
-export function H1({ children }: { children: React.ReactNode }) {
+export function H1({ children, style }: { children: React.ReactNode; style?: any }) {
   const dark = useDark();
-  return <Text style={[useStyles().h1, { color: dark ? Colors.text : Colors.textLight }]}>{children}</Text>;
+  return <Text style={[useStyles().h1, { color: dark ? Colors.text : Colors.textLight }, style]}>{children}</Text>;
 }
 
-export function H2({ children }: { children: React.ReactNode }) {
+export function H2({ children, style }: { children: React.ReactNode; style?: any }) {
   const dark = useDark();
-  return <Text style={[useStyles().h2, { color: dark ? Colors.text : Colors.textLight }]}>{children}</Text>;
+  return <Text style={[useStyles().h2, { color: dark ? Colors.text : Colors.textLight }, style]}>{children}</Text>;
 }
 
-export function Body({ children }: { children: React.ReactNode }) {
+/** Body copy. Forwards `style` and `numberOfLines` so long labels inside rows
+ *  can be truncated instead of shoving their siblings off-screen. */
+export function Body({ children, style, numberOfLines }: {
+  children: React.ReactNode;
+  style?: any;
+  numberOfLines?: number;
+}) {
   const dark = useDark();
-  return <Text style={[useStyles().body, { color: dark ? Colors.text : Colors.textLight }]}>{children}</Text>;
+  return (
+    <Text
+      numberOfLines={numberOfLines}
+      style={[useStyles().body, { color: dark ? Colors.text : Colors.textLight }, style]}
+    >
+      {children}
+    </Text>
+  );
 }
 
-export function Muted({ children, style }: { children: React.ReactNode; style?: any }) {
-  return <Text style={[useStyles().muted, style]}>{children}</Text>;
+export function Muted({ children, style, numberOfLines }: {
+  children: React.ReactNode;
+  style?: any;
+  numberOfLines?: number;
+}) {
+  return (
+    <Text numberOfLines={numberOfLines} style={[useStyles().muted, style]}>
+      {children}
+    </Text>
+  );
 }
 
 export type BtnIcon = AppIconName;
@@ -133,19 +154,29 @@ export function BigActionButton({
   );
 }
 
-/** Row of tiled buttons. Derives its gutter from the shared layout grid so the
- *  tiles line up with the cards above and below on every screen. */
+/**
+ * Row of tiles, two (or `columns`) per row.
+ *
+ * The grid wraps every child in a padded cell. Doing it here rather than
+ * asking callers to pass `gridCell()` onto the card is deliberate: padding on
+ * a bordered card lands INSIDE its border, which leaves two cards flush
+ * against each other with no gap. Callers just drop their cards in.
+ */
 export function ButtonGrid({ children, columns = 2, style }: {
   children: React.ReactNode;
   columns?: number;
   style?: any;
 }) {
-  return <View style={[gridRow(), style]}>{children}</View>;
-}
-
-/** Cell sizing for ButtonGrid children — spread it onto BigActionButton. */
-export function gridCell(columns = 2) {
-  return cell(columns);
+  const items = React.Children.toArray(children).filter(Boolean);
+  return (
+    <View style={[gridRow(), style]}>
+      {items.map((child, i) => (
+        <View key={i} style={cell(columns)}>
+          {child}
+        </View>
+      ))}
+    </View>
+  );
 }
 
 /** Row of PickButtons with the same gutter discipline as ButtonGrid. */
@@ -370,17 +401,69 @@ export function ProgressBar({ value, color }: { value: number; color?: string })
   );
 }
 
-export function SectionTitle({ title, icon, right }: { title: string; icon?: AppIconName; right?: string }) {
+/**
+ * Section header. The icon sits in a rounded badge and the optional `right`
+ * text is a pill, so a heading reads as one unit instead of three loose bits
+ * of text. Vertical rhythm is owned here (above/below) so every screen spaces
+ * identically — previously each caller guessed and headings ended up with 24px
+ * above and 4px below.
+ */
+export function SectionTitle({
+  title,
+  icon,
+  right,
+  hint,
+  tone,
+  tight,
+}: {
+  title: string;
+  icon?: AppIconName;
+  right?: string;
+  /** Optional second line under the title. */
+  hint?: string;
+  /** Overrides the icon badge colour. */
+  tone?: string;
+  /**
+   * Use when the heading sits INSIDE a Card. The card's own padding is the
+   * spacing there, so the screen-level top margin would double it up.
+   */
+  tight?: boolean;
+}) {
   const dark = useDark();
+  const s = useStyles();
+  const c = tone ?? Colors.primary;
   return (
-    <View style={useStyles().sectionRow}>
-      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-        {icon ? <AppIcon name={icon} size={18} color={Colors.primary} style={{ marginRight: 6 }} /> : null}
-        <Text style={[useStyles().h2, { color: dark ? Colors.text : Colors.textLight }]}>{title}</Text>
+    <View style={[s.sectionRow, tight && { marginTop: 0, marginBottom: 8 }]}>
+      <View style={s.sectionLeft}>
+        {icon ? (
+          <View style={[s.sectionBadge, { backgroundColor: c + '1F' }]}>
+            <AppIcon name={icon} size={13} color={c} />
+          </View>
+        ) : null}
+        <View style={{ flex: 1 }}>
+          <Text
+            style={[s.sectionTitle, { color: dark ? Colors.text : Colors.textLight }]}
+            numberOfLines={2}
+          >
+            {title}
+          </Text>
+          {hint ? <Text style={s.sectionHint} numberOfLines={2}>{hint}</Text> : null}
+        </View>
       </View>
-      {right ? <Text style={useStyles().muted}>{right}</Text> : null}
+      {right ? (
+        <View style={s.sectionPill}>
+          <Text style={s.sectionPillText} numberOfLines={1}>
+            {right}
+          </Text>
+        </View>
+      ) : null}
     </View>
   );
+}
+
+/** Fixed vertical gap. Use instead of hand-written marginTop numbers. */
+export function Space({ size = 12 }: { size?: number }) {
+  return <View style={{ height: size }} />;
 }
 
 export function SearchInput({ value, onChange, placeholder }: { value: string; onChange: (t: string) => void; placeholder: string }) {
@@ -518,10 +601,16 @@ export function TopSpace({ height = 16 }: { height?: number }) {
   return <View style={{ height }} />;
 }
 
+// Section rhythm: a heading gets SECT_ABOVE from whatever preceded it and
+// leaves SECT_BELOW to the first thing under it. Owned here so no screen has
+// to guess and headings can never end up crammed against their content.
+const SECT_ABOVE = 22;
+const SECT_BELOW = 10;
+
 const useStyles = () => StyleSheet.create({
-  card: { borderRadius: 18, padding: 16, borderWidth: 1, marginVertical: 8 },
-  h1: { fontSize: FontSize.xxl, fontWeight: '800', marginVertical: 8, letterSpacing: 0.3 },
-  h2: { fontSize: FontSize.lg, fontWeight: '700' },
+  card: { borderRadius: 18, padding: 14, borderWidth: 1, marginVertical: 6 },
+  h1: { fontSize: FontSize.xl, fontWeight: '800', marginVertical: 6, letterSpacing: 0.2 },
+  h2: { fontSize: FontSize.md, fontWeight: '800' },
   body: { fontSize: FontSize.md, lineHeight: 22 },
   muted: { color: Colors.muted, fontSize: FontSize.sm, lineHeight: 19 },
   btn: {
@@ -553,12 +642,15 @@ const useStyles = () => StyleSheet.create({
   submitText: { color: '#FFFFFF', fontWeight: '800', fontSize: 15 },
   ghost: { borderRadius: 14, paddingVertical: 12, paddingHorizontal: 14, alignItems: 'center', justifyContent: 'center', marginVertical: 6, flexDirection: 'row', borderWidth: 1.5 },
   ghostText: { fontWeight: '700', fontSize: 14 },
-  bigAction: { minHeight: 112, borderRadius: 20, borderWidth: 2, paddingVertical: 14, paddingHorizontal: 6, alignItems: 'center', justifyContent: 'center' },
-  bigActionIcon: { width: 50, height: 50, borderRadius: 25, alignItems: 'center', justifyContent: 'center' },
-  bigActionTitle: { fontWeight: '800', fontSize: 15, textAlign: 'center', marginTop: 8 },
-  bigActionHint: { color: Colors.muted, fontSize: 11, fontWeight: '600', textAlign: 'center', marginTop: 2, lineHeight: 15 },
-  bigActionBadge: { position: 'absolute', top: 8, right: 8, borderRadius: 999, paddingHorizontal: 7, paddingVertical: 2 },
-  bigActionBadgeText: { color: '#FFFFFF', fontSize: 9, fontWeight: '900', letterSpacing: 0.4 },
+  // Grid tile. Compact on purpose: icon, label, one hint line. The hint is
+  // capped at 2 lines and the box has no min-height to grow past, so a long
+  // hint ("Strength · Yoga · Cardio · Mobility") can never inflate the tile.
+  bigAction: { borderRadius: 16, borderWidth: 1.5, paddingVertical: 11, paddingHorizontal: 10, alignItems: 'center', justifyContent: 'center' },
+  bigActionIcon: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
+  bigActionTitle: { fontWeight: '800', fontSize: 13.5, textAlign: 'center', marginTop: 6 },
+  bigActionHint: { color: Colors.muted, fontSize: 10, fontWeight: '600', textAlign: 'center', marginTop: 2, lineHeight: 13 },
+  bigActionBadge: { position: 'absolute', top: 6, right: 6, borderRadius: 999, paddingHorizontal: 6, paddingVertical: 1.5 },
+  bigActionBadgeText: { color: '#FFFFFF', fontSize: 8.5, fontWeight: '900', letterSpacing: 0.4 },
   pickRow: { flexDirection: 'row', marginHorizontal: -4 },
   pick: { flex: 1, borderWidth: 2, borderRadius: 14, paddingVertical: 13, paddingHorizontal: 8, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', marginHorizontal: 4 },
   pickText: { fontWeight: '800', fontSize: 14 },
@@ -589,7 +681,27 @@ const useStyles = () => StyleSheet.create({
   dataValue: { fontWeight: '800', fontSize: 14 },
   track: { height: 8, borderRadius: 999, backgroundColor: Colors.border, overflow: 'hidden', marginVertical: 6 },
   fill: { height: '100%', borderRadius: 999 },
-  sectionRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 16, marginBottom: 4 },
+  sectionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: SECT_ABOVE,
+    marginBottom: SECT_BELOW,
+  },
+  sectionLeft: { flexDirection: 'row', alignItems: 'center', flex: 1, marginRight: 10 },
+  // Badge and title are deliberately small: a heading must not out-weigh the
+  // content it introduces.
+  sectionBadge: { width: 26, height: 26, borderRadius: 9, alignItems: 'center', justifyContent: 'center', marginRight: 9 },
+  sectionTitle: { fontSize: 15, fontWeight: '800', letterSpacing: 0 },
+  sectionHint: { color: Colors.muted, fontSize: 11.5, marginTop: 1, lineHeight: 15 },
+  sectionPill: {
+    backgroundColor: Colors.raised,
+    borderRadius: 999,
+    paddingHorizontal: 9,
+    paddingVertical: 4,
+    maxWidth: '45%',
+  },
+  sectionPillText: { color: Colors.muted, fontSize: 10.5, fontWeight: '800' },
   searchWrap: { flexDirection: 'row', alignItems: 'center', borderRadius: 14, paddingHorizontal: 12, paddingVertical: 4, borderWidth: 1, marginVertical: 8 },
   searchInput: { flex: 1, padding: 10, fontSize: 15, marginLeft: 6 },
   disclaimer: { backgroundColor: Colors.raised, borderRadius: 12, padding: 12, marginVertical: 8, flexDirection: 'row', alignItems: 'flex-start' },

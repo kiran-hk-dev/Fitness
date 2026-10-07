@@ -11,7 +11,7 @@ import { QUICK_MEALS, quickMealCalories, quickMealCount } from '../../src/data/q
 import { buildTargets } from '../../src/utils/nutrition';
 import { FadeIn, Stagger, BouncyPress } from '../../src/components/Motion';
 import { AppIcon } from '../../src/components/AppIcon';
-import { Colors, cell } from '../../src/theme';
+import { Colors } from '../../src/theme';
 
 export default function NutritionTab() {
   const router = useRouter();
@@ -26,7 +26,7 @@ export default function NutritionTab() {
 
       <FadeIn delay={70}>
         <Card>
-          <SectionTitle title="Today's macro split" icon="pie-chart-outline" />
+          <SectionTitle title="Today's macro split" icon="pie-chart-outline" tight />
           <MacroPie protein={t.protein_g} carbs={t.carbs_g} fat={t.fat_g} />
           <Body>Cal {t.calories} • P {t.protein_g}g • C {t.carbs_g}g • F {t.fat_g}g • Fiber {t.fiber_g}g</Body>
           <Muted>Educational estimates — editable in Profile. Not a prescription.</Muted>
@@ -35,11 +35,10 @@ export default function NutritionTab() {
 
       {/* Logging is the main job on this tab — make it the biggest thing here. */}
       <FadeIn delay={130}>
-        <SectionTitle title="Log it fast" icon="flash-outline" />
+        <SectionTitle title="Log it fast" icon="flash-outline" hint="One tap, already counted" />
       </FadeIn>
       <ButtonGrid>
         <BigActionButton
-          style={cell(2)}
           title="Log a meal"
           hint="Tap to log instantly"
           icon="restaurant-outline"
@@ -47,7 +46,6 @@ export default function NutritionTab() {
           badge="GO"
         />
         <BigActionButton
-          style={cell(2)}
           title="Browse foods"
           hint="Macros and images"
           icon="search-outline"
